@@ -30,7 +30,7 @@ def over_mavg(price, quotes):
   _mavg = mavg(quotes) 
   return price >= _mavg
 
-def check(symbol):
+def check(symbol, position=False):
   days = 20
   quotes = prices(symbol, days) 
   _raising = raising(symbol) 
@@ -39,17 +39,22 @@ def check(symbol):
   _min = min(quotes)
   #print "%s min %s, now %s" % (symbol, _min, _price)
 
+  if(position):
+    color = "red"
+  else:  
+    color = "orange"
+
   if(_raising and
      _over_mavg):
     print "<div style=color:green>Raising and over mavg: BUY %s</div>" % symbol
     return
 
   if(not _over_mavg):
-    print "<div style=color:red>Not over mavg: SELL %s</div>" % symbol
+    print "<div style=color:%s>Not over mavg: SELL %s</div>" % (color, symbol)
     return
   
   if(_price <= _min):
-    print "<div style=color:red>Under 20 day min: SELL %s</div>" % symbol
+    print "<div style=color:orange>Under 20 day min: SELL %s</div>" % (color, symbol)
     return
   
   print "<div>No matching condition for %s</div>" % symbol
@@ -71,16 +76,6 @@ print 'Content-Type: text/html'
 print ''
 print '<body>'
 
-check('SAND.ST')
-check('AZN.ST')
-check('LUPE.ST')
-check('TEL2-A.ST')
-check('TLSN.ST')
-check('AZA.ST')
-check('SEB-A.ST')
-
-
-
 print '<h2>Retail & Services</h2>'
 check('ELUX-B.ST')
 check('HMB.ST')
@@ -88,15 +83,15 @@ check('ENRO.ST')
 check('CLAS-B.ST')
 
 print '<h2>Energi</h2>'
-check('LUPE.ST')
+check('LUPE.ST', True)
 check('AOIL-SDB.ST')
 check('CCOR-B.ST')
 check('ENQ.ST')
  
 print '<h2>Telecom</h2>'
-check('TEL2-A.ST')
+check('TEL2-A.ST', True)
 check('TEL2-B.ST')
-check('TLSN.ST')
+check('TLSN.ST', True)
 check('MIC-SDB.ST')
  
 print '<h2>IT</h2>'
@@ -106,7 +101,7 @@ check('AXIS.ST')
 check('ERIC-A.ST')
  
 print '<h2>Industri</h2>'
-check('SAND.ST')
+check('SAND.ST', True)
 check('SWEC-A.ST')
 check('SWEC-B.ST')
 check('ATCO-A.ST')
@@ -125,7 +120,7 @@ check('ACTI.ST')
  
 print '<h2>Finance</h2>'
 check('SEB-A.ST')
-check('AZA.ST')
+check('AZA.ST', True)
 check('SWED-A.ST')
 check('BURE.ST')
  
