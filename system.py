@@ -57,7 +57,7 @@ def check(symbol, position=False):
     print "<div style=color:orange>Under 20 day min: SELL %s</div>" % (color, symbol)
     return
   
-  print "<div>No matching condition for %s</div>" % symbol
+  print "<div>No matching signal for %s</div>" % symbol
   
 
 # buy signals
@@ -68,7 +68,10 @@ def check(symbol, position=False):
 # not raising AND under mavg
 # OR
 # down to 20 day minimum
-  
+ 
+# missing signal
+# Sell only when not below risk
+ 
 def raising(symbol):
   return float(ystockquote.get_change(symbol))>0
 
