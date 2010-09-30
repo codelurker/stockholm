@@ -20,11 +20,11 @@ class Query:
     return c
     
 class Position:
-  def __init__(self, tuple):
-    (self.symbol,
-    self.stop) = tuple
-    self.is_long = True
-    self.value = 0
+  def __init__(self, dict_):
+    self.symbol = dict_['symbol']
+    self.stop = dict_.get('stop', 0)
+    self.is_long = dict_.get('is_long', True)
+    self.value = dict_.get('value', True)
   
   def __str__(self):
     return "Position %s: stop=%s value=%s is_long:%s" % (self.symbol, self.stop, self.value, self.is_long)

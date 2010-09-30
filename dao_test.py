@@ -6,9 +6,8 @@ from dao import Position
 class TestQuote(unittest.TestCase):
 
   def test_has_met_stop_long(self):
-    position = Position(('EXAMPLE', 10))
+    position = Position({'symbol': 'EXAMPLE', 'stop': 10})
     position.is_long = True 
-    position.stop = 10 
     q  = Quote(('EXAMPLE', '2010-01-78', 10, 12, 8, 9))
 
     q.close = 9
@@ -19,9 +18,8 @@ class TestQuote(unittest.TestCase):
     self.assertTrue(q.has_met_stop(position))
 
   def test_has_met_stop_short(self):
-    position = Position(('EXAMPLE', 10))
+    position = Position({'symbol': 'EXAMPLE', 'stop': 10})
     position.is_long = False 
-    position.stop = 10 
     q  = Quote(('EXAMPLE', '2010-01-78', 10, 12, 8, 9))
 
     q.close = 9
