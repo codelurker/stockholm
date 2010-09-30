@@ -25,6 +25,9 @@ class Position:
     self.stop) = tuple
     self.is_long = True
     self.value = 0
+  
+  def __str__(self):
+    return "Position %s: stop=%s value=%s is_long:%s" % (self.symbol, self.stop, self.value, self.is_long)
 
 class Quote:
   def __init__(self, tuple):
@@ -36,10 +39,10 @@ class Quote:
     self.close) = tuple
 
   def has_met_stop(self, position):
-    print position.is_long
-    print self.close
-    print position.stop
-    return (self.close <= position.stop if position.is_long else self.close >= position.stop)
+    if position.is_long:
+      return self.close >= position.stop
+    else:
+      return self.close <= position.stop
 
   def is_over_sma50_7(self):
     indicators = self.get_trailing_indicators(7)
@@ -78,7 +81,7 @@ class Quote:
     return Indicator.get_indicator(self.symbol, self.date)
     
   def __str__(self):
-    return "%s %s close:%s open:%s" % (self.symbol, self.date, self.close, self.open)
+    return "Quote %s: date:%s close:%s open:%s" % (self.symbol, self.date, self.close, self.open)
 
 class Indicator:
 

@@ -9,8 +9,8 @@ class TestQuote(unittest.TestCase):
     position = Position(('EXAMPLE', 10))
     position.is_long = True 
     position.stop = 10 
-    
     q  = Quote(('EXAMPLE', '2010-01-78', 10, 12, 8, 9))
+
     q.close = 9
     self.assertFalse(q.has_met_stop(position))
     q.close = 10
@@ -18,17 +18,17 @@ class TestQuote(unittest.TestCase):
     q.close = 11
     self.assertTrue(q.has_met_stop(position))
 
-  def atest_has_met_stop_short(self):
+  def test_has_met_stop_short(self):
     position = Position(('EXAMPLE', 10))
     position.is_long = False 
     position.stop = 10 
-    
     q  = Quote(('EXAMPLE', '2010-01-78', 10, 12, 8, 9))
-    q.close = 11
+
+    q.close = 9
     self.assertTrue(q.has_met_stop(position))
     q.close = 10
     self.assertTrue(q.has_met_stop(position))
-    q.close = 9
+    q.close = 11
     self.assertFalse(q.has_met_stop(position))
 
 
