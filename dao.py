@@ -36,7 +36,10 @@ class Quote:
     self.close) = tuple
 
   def has_met_stop(self, position):
-    return self.close < position.stop if position.is_long else self.close > position.stop
+    print position.is_long
+    print self.close
+    print position.stop
+    return (self.close <= position.stop if position.is_long else self.close >= position.stop)
 
   def is_over_sma50_7(self):
     indicators = self.get_trailing_indicators(7)
