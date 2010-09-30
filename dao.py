@@ -29,6 +29,16 @@ class Position:
   def __str__(self):
     return "Position %s: stop=%s value=%s is_long:%s" % (self.symbol, self.stop, self.value, self.is_long)
 
+class Quote2:
+  def __init__(self, dict_):
+    self.symbol = dict_.get('symbol')
+    self.date = dict_.get('date')
+    self.open = dict_.get('open')
+    self.high = dict_.get('high')
+    self.low = dict_.get('low')
+    self.close = dict_.get('close')
+
+
 class Quote:
   def __init__(self, tuple):
     (self.symbol,
@@ -83,6 +93,18 @@ class Quote:
   def __str__(self):
     return "Quote %s: date:%s close:%s open:%s" % (self.symbol, self.date, self.close, self.open)
 
+class Indicator2:
+  def __init__(self, dict_):
+    self.symbol = dict_.get('symbol')
+    self.date = dict_.get('stop', 0)
+    self.atr_14 = dict_.get('atr_14', 0)
+    # Tells at how many atr we will put a stop
+    self.atr_stop = dict_.get('atr_stop', 0)
+  
+  def calculate_stop(self, quote):
+    return float(quote.close) - float(self.atr_14) * float(self.atr_stop);
+
+ 
 class Indicator:
 
   def __init__(self, tuple):
