@@ -42,6 +42,24 @@ class TestQuote(unittest.TestCase):
     quote = Quote.get_quote('AAPL', '2001-01-01')
     self.assertQuote(quote)
   
+  def test_previous(self):
+    quote = Quote.get_quote('AAPL', '2001-01-02')
+    self.assertQuote(quote.previous())
+
+  def test_get_indicator(self):
+    quote = Quote({'symbol':'AAPL', 'date':'2001-01-02'})
+    indicator = Indicator({})
+    Indicator.get_indicator = Mock(return_value=indicator)
+    self.assertEquals(indicator, quote.get_indicator())
+    Indicator.get_indicator.assert_called_with('AAPL', '2001-01-02') 
+
+  def test_get_trailing_indicators(self):
+    quote = Quote({'symbol':'AAPL', 'date':'2001-01-02'})
+    indicators = Indicator({})
+    Indicator.get_trailing_indicators = Mock(return_value=indicators)
+    self.assertEquals(indicators, quote.get_trailing_indicators(7))
+    Indicator.get_trailing_indicators.assert_called_with('AAPL', '2001-01-02', 7) 
+ 
   def assertQuote(self, quote):
     self.assertEquals('AAPL', quote.symbol)
     self.assertEquals(('2001-01-01'), str(quote.date))

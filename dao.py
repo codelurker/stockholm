@@ -105,12 +105,9 @@ class Quote(Base):
   def get_trailing_indicators(self, days):
     return Indicator.get_trailing_indicators(self.symbol, self.date, days)
 
-  def get_day_indicator(self):
+  def get_indicator(self):
     return Indicator.get_indicator(self.symbol, self.date)
     
-  def __str__(self):
-    return "Quote %s: date:%s close:%s open:%s" % (self.symbol, self.date, self.close, self.open)
-
 class Indicator(Base):
   def calculate_stop(self, quote):
     return float(quote.close) - float(self.atr_14) * float(self.atr_stop);
