@@ -79,16 +79,16 @@ class Quote(Base):
  
   @staticmethod
   def set_tr(symbol, date, value):
-    c = Query("UPDATE quote SET tr = %s WHERE symbol = %s and date = %s", (value, symbol, date))
+    c = Query("UPDATE quote SET tr = %s WHERE symbol = %s and date = %s", (value, symbol, date)).execute()
   
   @staticmethod
   def get_quotes(symbol):
-    c = Query("SELECT symbol, date, open, high, low, close from quote where symbol = %s and date > %s order by date asc", (symbol, Quote.start_date))
+    c = Query("SELECT symbol, date, open, high, low, close, tr from quote where symbol = %s and date > %s order by date asc", (symbol, Quote.start_date))
     return c.fillall(Quote)
 
   @staticmethod
   def get_quote(symbol, date):
-    c = Query("SELECT symbol, date, open, high, low, close from quote where symbol = %s and date = %s", (symbol, date))
+    c = Query("SELECT symbol, date, open, high, low, close, tr from quote where symbol = %s and date = %s", (symbol, date))
     return c.fillone(Quote)
 
   def previous(self):

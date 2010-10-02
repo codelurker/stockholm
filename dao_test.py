@@ -74,6 +74,15 @@ class TestQuote(unittest.TestCase):
     self.assertEquals(indicators, quote.get_trailing_indicators(7))
     Indicator.get_trailing_indicators.assert_called_with('AAPL', '2001-01-02', 7) 
  
+  def test_set_tr(self):
+    Quote.set_tr('AAPL', '2001-01-02', '1234')
+    quote = Quote.get_quote('AAPL', '2001-01-02')
+    self.assertEquals(Decimal('1234'), quote.tr)
+    
+    Quote.set_tr('AAPL', '2001-01-02', '5678')
+    quote = Quote.get_quote('AAPL', '2001-01-02')
+    self.assertEquals(Decimal('5678'), quote.tr)
+
   def assertQuote(self, quote):
     self.assertEquals('AAPL', quote.symbol)
     self.assertEquals(('2001-01-01'), str(quote.date))
