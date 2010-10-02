@@ -42,6 +42,20 @@ class TestQuote(unittest.TestCase):
     quote = Quote.get_quote('AAPL', '2001-01-01')
     self.assertQuote(quote)
   
+  def test_get_quotes(self):
+    Quote.start_date = '2001-01-0' # Beginning of fixtures
+    quotes = Quote.get_quotes('AAPL')
+    found = False
+    for quote in quotes:
+      self.assertTrue(isinstance(quote, Quote))
+      self.assertEquals('AAPL', quote.symbol)
+      try:
+        self.assertQuote(quote)
+        found = True
+      except AssertionError:
+        pass
+    self.assertTrue(found)
+
   def test_previous(self):
     quote = Quote.get_quote('AAPL', '2001-01-02')
     self.assertQuote(quote.previous())

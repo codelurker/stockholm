@@ -59,13 +59,10 @@ class Query:
     return aclass(d)
    
 class Position(Base):
-  def x__init__(self, dict_):
-    self.symbol = dict_['symbol']
-    self.stop = dict_.get('stop', 0)
-    self.is_long = dict_.get('is_long', True)
-    self.value = dict_.get('value', True)
+  pass
 
 class Quote(Base):
+  start_date = "2010-01-01"
   
   def has_met_stop(self, position):
     if position.is_long:
@@ -86,12 +83,8 @@ class Quote(Base):
   
   @staticmethod
   def get_quotes(symbol):
-    start_date = "2009-01-01"
-    c = Query("SELECT symbol, date, open, high, low, close from quote where symbol = %s and date > %s order by date asc", (symbol, start_date))
-    quotes = []
-    for tuple in c.fetchall():
-      quotes.append(Quote(tuple))
-    return quotes
+    c = Query("SELECT symbol, date, open, high, low, close from quote where symbol = %s and date > %s order by date asc", (symbol, Quote.start_date))
+    return c.fillall(Quote)
 
   @staticmethod
   def get_quote(symbol, date):
