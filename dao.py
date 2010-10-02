@@ -3,35 +3,66 @@ import time
 import datetime
 from datetime import date
 import MySQLdb
+import re
 
+class Base:
+  def __init__(self, dict_):
+    self.__dict__ = dict_
+ 
+  def __str__(self):
+    s = self.__class__.__name__
+    for k,v in self.__dict__.items():
+      s += " %s:%s" % (k,v)
+    return s
+ 
 class Query:
   def __init__(self, query, params):
     self.query = query
     self.params = params
     self.db=MySQLdb.connect(host="localhost", user="robcos",
                       passwd="robcos", db="stocks")
-
   def execute(self):
-    c = self.db.cursor()
+    self.cursor = self.db.cursor()
+    self.cursor.execute(self.query, self.params)
     #print "######## DEBUG ########\n" if debug
     #print self.query % self.params
-    c.execute(self.query, self.params)
     #print "\n######## DEBUG ########" if debug
-    return c
-    
-class Position:
-  def __init__(self, dict_):
+    return self
+
+  def keys(self):
+    return re.split(' *, *', re.search('SELECT (.*) FROM', self.query, flags=re.IGNORECASE).group(1))
+
+  def fetchone_(self):
+    return self.cursor.fetchone()
+
+  def fillall(self, aclass):
+    all = []
+    while(True):
+      values = self.fetchone_()
+      if values == None:
+        break
+      all.append(self.fillone_(aclass, values))
+    return all
+
+  def fillone(self, aclass):
+    values = self.fetchone_()
+    return self.fillone_(aclass, values)
+
+  def fillone_(self, aclass, values):
+    d = dict()
+    for i, k in enumerate(self.keys()):
+      d[k] = values[i]
+    return aclass(d)
+   
+class Position(Base):
+  def x__init__(self, dict_):
     self.symbol = dict_['symbol']
     self.stop = dict_.get('stop', 0)
     self.is_long = dict_.get('is_long', True)
     self.value = dict_.get('value', True)
-  
-  def __str__(self):
-    return "Position %s: stop=%s value=%s is_long:%s" % (self.symbol, self.stop, self.value, self.is_long)
 
-class Quote2:
-  def __init__(self, dict_):
-    self.__dict__ = dict_
+class Quote2(Base):
+  pass
 
 class Quote:
   def __init__(self, tuple):
@@ -87,28 +118,20 @@ class Quote:
   def __str__(self):
     return "Quote %s: date:%s close:%s open:%s" % (self.symbol, self.date, self.close, self.open)
 
-class Indicator2:
-  def __init__(self, dict_):
-    self.__dict__ = dict_
-  
+class Indicator(Base):
   def calculate_stop(self, quote):
     return float(quote.close) - float(self.atr_14) * float(self.atr_stop);
 
- 
-class Indicator:
-
-  def __init__(self, tuple):
-    (self.symbol,
-    self.date,
-    self.sma_20,
-    self.sma_50,
-    self.atr_14
-    ) = tuple
-
   @staticmethod
   def get_indicator(symbol, date):
-    c = Query('SELECT symbol, date, sma_20, sma_50, atr_14 FROM indicator i WHERE i.symbol = %s AND i.date = %s', (symbol, date)).execute()
-    return Indicator(c.fetchone())
+    query = Query('SELECT symbol, date, sma_20, sma_50, atr_14 FROM indicator i WHERE i.symbol = %s AND i.date = %s', (symbol, date))
+    return query.fillone(Indicator)
+    #keys = query.keys()
+    #values = query.execute().fetchone()
+    #d = dict()
+    #for i, k in enumerate(query.keys()):
+    #  d[k] = values[i]
+    #return Indicator(d)
 
   @staticmethod
   def get_trailing_indicators(symbol, date, days):
