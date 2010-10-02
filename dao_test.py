@@ -1,6 +1,7 @@
 import unittest
 from mock import Mock
 
+from decimal import Decimal
 from dao import Base 
 from dao import Query 
 from dao import Quote 
@@ -35,7 +36,26 @@ class TestQuote(unittest.TestCase):
     self.assertFalse(q.has_met_stop(position))
 
 class TestIndicator(unittest.TestCase):
+  
+  def test_get_indicator(self):
+    indicator = Indicator.get_indicator('AAPL', '2001-01-01')
+    self.assertIndicator(indicator)
 
+  def assertIndicator(self, indicator):
+    self.assertTrue(isinstance(indicator, Indicator))
+    self.assertEquals('AAPL', indicator.symbol)
+    self.assertEquals(('2001-01-01'), str(indicator.date))
+    self.assertEquals(Decimal('100.1'), indicator.sma_20)
+    self.assertEquals(Decimal('110.1'), indicator.sma_50)
+    self.assertEquals(Decimal('120.1'), indicator.atr_14)
+  
+  def test_get_trailing_indicators(self):
+    indicators = Indicator.get_trailing_indicators('AAPL', '2001-01-02', 2)
+    self.assertEquals(2, len(indicators))
+    self.assertIndicator(indicators[1])
+    self.assertEquals('AAPL', indicators[0].symbol)
+    self.assertEquals(('2001-01-02'), str(indicators[0].date))
+  
   def test_calculate_stop(self):
     quote  = Quote2({'close': 10})
     indicator = Indicator({'atr_14': 1})
@@ -52,7 +72,7 @@ class TestQuery(unittest.TestCase):
 
   def test_fillone(self):
     query = Query("select a,b,c from bah", ())
-    query.keys = Mock(return_value=('a', 'b', 'c'))
+    query.keys_ = Mock(return_value=('a', 'b', 'c'))
     query.fetchone_ = Mock(return_value=('1', '2', '3'))
     dummy = query.fillone(TestQuery.Dummy)
     self.assertTrue(isinstance(dummy, TestQuery.Dummy))
@@ -62,7 +82,7 @@ class TestQuery(unittest.TestCase):
 
   def test_fillall(self):
     query = Query("select a,b,c from bah", ());
-    query.keys = Mock(return_value=('a', 'b'))
+    query.keys_ = Mock(return_value=('a', 'b'))
   
     values = [('1', '2'),('3', '4'), None]
     values.reverse()
@@ -80,5 +100,4 @@ class TestQuery(unittest.TestCase):
     self.assertTrue(4, dummies[1].b)
 
 if __name__ == '__main__':
-    Indicator
     unittest.main()

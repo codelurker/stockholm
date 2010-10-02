@@ -29,7 +29,7 @@ class Query:
     #print "\n######## DEBUG ########" if debug
     return self
 
-  def keys(self):
+  def keys_(self):
     return re.split(' *, *', re.search('SELECT (.*) FROM', self.query, flags=re.IGNORECASE).group(1))
 
   def fetchone_(self):
@@ -49,8 +49,10 @@ class Query:
     return self.fillone_(aclass, values)
 
   def fillone_(self, aclass, values):
+    if not values:
+      return None
     d = dict()
-    for i, k in enumerate(self.keys()):
+    for i, k in enumerate(self.keys_()):
       d[k] = values[i]
     return aclass(d)
    
@@ -124,14 +126,8 @@ class Indicator(Base):
 
   @staticmethod
   def get_indicator(symbol, date):
-    query = Query('SELECT symbol, date, sma_20, sma_50, atr_14 FROM indicator i WHERE i.symbol = %s AND i.date = %s', (symbol, date))
+    query = Query('SELECT symbol, date, sma_20, sma_50, atr_14 FROM indicator i WHERE i.symbol = %s AND i.date = %s', (symbol, date)).execute()
     return query.fillone(Indicator)
-    #keys = query.keys()
-    #values = query.execute().fetchone()
-    #d = dict()
-    #for i, k in enumerate(query.keys()):
-    #  d[k] = values[i]
-    #return Indicator(d)
 
   @staticmethod
   def get_trailing_indicators(symbol, date, days):
@@ -139,7 +135,4 @@ class Indicator(Base):
       Returns the indicators for the last x days.
     """
     c = Query('SELECT symbol, date, sma_20, sma_50, atr_14 FROM indicator i WHERE i.symbol = %s AND i.date <=%s ORDER BY i.date desc LIMIT %s', (symbol, date, days)).execute()
-    indicators = []
-    for tuple in c.fetchall():
-      indicators.append(Indicator(tuple))
-    return indicators
+    return c.fillall(Indicator)
