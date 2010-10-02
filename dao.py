@@ -36,6 +36,7 @@ class Query:
     return self.cursor.fetchone()
 
   def fillall(self, aclass):
+    self.execute()
     all = []
     while(True):
       values = self.fetchone_()
@@ -45,6 +46,7 @@ class Query:
     return all
 
   def fillone(self, aclass):
+    self.execute()
     values = self.fetchone_()
     return self.fillone_(aclass, values)
 
@@ -63,18 +65,8 @@ class Position(Base):
     self.is_long = dict_.get('is_long', True)
     self.value = dict_.get('value', True)
 
-class Quote2(Base):
-  pass
-
-class Quote:
-  def __init__(self, tuple):
-    (self.symbol,
-    self.date,
-    self.open,
-    self.high,
-    self.low,
-    self.close) = tuple
-
+class Quote(Base):
+  
   def has_met_stop(self, position):
     if position.is_long:
       return self.close >= position.stop
@@ -90,12 +82,12 @@ class Quote:
  
   @staticmethod
   def set_tr(symbol, date, value):
-    c = Query("UPDATE quote SET tr = %s WHERE symbol = %s and date = %s", (value, symbol, date)).execute()
+    c = Query("UPDATE quote SET tr = %s WHERE symbol = %s and date = %s", (value, symbol, date))
   
   @staticmethod
   def get_quotes(symbol):
     start_date = "2009-01-01"
-    c = Query("SELECT symbol, date, open, high, low, close from quote where symbol = %s and date > %s order by date asc", (symbol, start_date)).execute()
+    c = Query("SELECT symbol, date, open, high, low, close from quote where symbol = %s and date > %s order by date asc", (symbol, start_date))
     quotes = []
     for tuple in c.fetchall():
       quotes.append(Quote(tuple))
@@ -103,13 +95,12 @@ class Quote:
 
   @staticmethod
   def get_quote(symbol, date):
-    c = Query("SELECT symbol, date, open, high, low, close from quote where symbol = %s and date = %s", (symbol, date)).execute()
-    return Quote(c.fetchone())
+    c = Query("SELECT symbol, date, open, high, low, close from quote where symbol = %s and date = %s", (symbol, date))
+    return c.fillone(Quote)
 
   def previous(self):
-    c = Query("SELECT symbol, date, open, high, low, close from quote where symbol = %s and date < %s order by date desc limit 1", (self.symbol, self.date)).execute()
-    tuple = c.fetchone()
-    return Quote(tuple) if tuple else None
+    c = Query("SELECT symbol, date, open, high, low, close from quote where symbol = %s and date < %s order by date desc limit 1", (self.symbol, self.date))
+    return c.fillone(Quote)
   
   def get_trailing_indicators(self, days):
     return Indicator.get_trailing_indicators(self.symbol, self.date, days)
@@ -126,7 +117,7 @@ class Indicator(Base):
 
   @staticmethod
   def get_indicator(symbol, date):
-    query = Query('SELECT symbol, date, sma_20, sma_50, atr_14 FROM indicator i WHERE i.symbol = %s AND i.date = %s', (symbol, date)).execute()
+    query = Query('SELECT symbol, date, sma_20, sma_50, atr_14 FROM indicator i WHERE i.symbol = %s AND i.date = %s', (symbol, date))
     return query.fillone(Indicator)
 
   @staticmethod
@@ -134,5 +125,5 @@ class Indicator(Base):
     """
       Returns the indicators for the last x days.
     """
-    c = Query('SELECT symbol, date, sma_20, sma_50, atr_14 FROM indicator i WHERE i.symbol = %s AND i.date <=%s ORDER BY i.date desc LIMIT %s', (symbol, date, days)).execute()
+    c = Query('SELECT symbol, date, sma_20, sma_50, atr_14 FROM indicator i WHERE i.symbol = %s AND i.date <=%s ORDER BY i.date desc LIMIT %s', (symbol, date, days))
     return c.fillall(Indicator)

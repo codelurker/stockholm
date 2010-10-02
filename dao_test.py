@@ -5,16 +5,15 @@ from decimal import Decimal
 from dao import Base 
 from dao import Query 
 from dao import Quote 
-from dao import Quote2
 from dao import Position
 from dao import Indicator
 
 class TestQuote(unittest.TestCase):
 
   def test_has_met_stop_long(self):
-    position = Position({'symbol': 'EXAMPLE', 'stop': 10})
+    position = Position({'stop': 10})
     position.is_long = True 
-    q  = Quote(('EXAMPLE', '2010-01-78', 10, 12, 8, 9))
+    q  = Quote({})
 
     q.close = 9
     self.assertFalse(q.has_met_stop(position))
@@ -24,9 +23,9 @@ class TestQuote(unittest.TestCase):
     self.assertTrue(q.has_met_stop(position))
 
   def test_has_met_stop_short(self):
-    position = Position({'symbol': 'EXAMPLE', 'stop': 10})
+    position = Position({'stop': 10})
     position.is_long = False 
-    q  = Quote(('EXAMPLE', '2010-01-78', 10, 12, 8, 9))
+    q  = Quote({})
 
     q.close = 9
     self.assertTrue(q.has_met_stop(position))
@@ -34,6 +33,22 @@ class TestQuote(unittest.TestCase):
     self.assertTrue(q.has_met_stop(position))
     q.close = 11
     self.assertFalse(q.has_met_stop(position))
+    
+  def test_get_quote_not_found(self):
+    quote = Quote.get_quote('----', '2001-01-01')
+    self.assertEquals(None, quote)
+  
+  def test_get_quote(self):
+    quote = Quote.get_quote('AAPL', '2001-01-01')
+    self.assertQuote(quote)
+  
+  def assertQuote(self, quote):
+    self.assertEquals('AAPL', quote.symbol)
+    self.assertEquals(('2001-01-01'), str(quote.date))
+    self.assertEquals(Decimal('100.1'), quote.close)
+    self.assertEquals(Decimal('110.1'), quote.high)
+    self.assertEquals(Decimal('120.1'), quote.low)
+    self.assertEquals(Decimal('130.1'), quote.open)
 
 class TestIndicator(unittest.TestCase):
   
@@ -57,7 +72,7 @@ class TestIndicator(unittest.TestCase):
     self.assertEquals(('2001-01-02'), str(indicators[0].date))
   
   def test_calculate_stop(self):
-    quote  = Quote2({'close': 10})
+    quote  = Quote({'close': 10})
     indicator = Indicator({'atr_14': 1})
     quote.get_day_indicator = Mock(return_value=indicator)
     indicator.atr_stop = 3
@@ -72,8 +87,10 @@ class TestQuery(unittest.TestCase):
 
   def test_fillone(self):
     query = Query("select a,b,c from bah", ())
+    query.execute = Mock()
     query.keys_ = Mock(return_value=('a', 'b', 'c'))
     query.fetchone_ = Mock(return_value=('1', '2', '3'))
+
     dummy = query.fillone(TestQuery.Dummy)
     self.assertTrue(isinstance(dummy, TestQuery.Dummy))
     self.assertTrue(1, dummy.a)
@@ -82,6 +99,7 @@ class TestQuery(unittest.TestCase):
 
   def test_fillall(self):
     query = Query("select a,b,c from bah", ());
+    query.execute = Mock()
     query.keys_ = Mock(return_value=('a', 'b'))
   
     values = [('1', '2'),('3', '4'), None]
