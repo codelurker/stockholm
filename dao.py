@@ -119,6 +119,28 @@ class Position(Base):
         'shares': shares, 'portfolio_id': 1, 'stop': stop})
     position.save();
   
+  def get_risk(self):
+    """ 
+        Returns the risk in money associated to this position.
+        The risk is the amount of money you would loose if you
+        sold the position at the stop value
+    """
+    return self.enter_price - self.stop
+  
+  def get_rtr(self, price):
+    """ 
+        Returns the reward to risk ratio for this position.
+        The rts is the number of times the money you risked
+        yielded by this position
+        
+        price -- The price that should be used in the 
+            calculation
+    """
+    
+    gain = price - self.enter_price
+    risk = self.get_risk()
+    return gain / risk
+
 class Quote(Base):
   start_date = "2010-01-01"
   

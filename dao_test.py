@@ -200,7 +200,16 @@ class TestPosition(unittest.TestCase):
     for position in positions:
       self.assertTrue(isinstance(position, Position))
       self.assertEquals(None, position.exit_date)
-      
- 
+  
+  def test_get_risk(self):
+    position = Position({'stop': Decimal('8'), 'enter_price': Decimal('10')})    
+    self.assertEquals(2, position.get_risk())
+  
+  def test_get_rtr(self):
+    position = Position({'stop': Decimal('8'), 'enter_price': Decimal('10')})    
+    self.assertEquals(0, position.get_rtr(10))
+    self.assertEquals(1, position.get_rtr(12))
+    self.assertEquals(2, position.get_rtr(14))
+
 if __name__ == '__main__':
     unittest.main()
