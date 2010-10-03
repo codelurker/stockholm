@@ -194,6 +194,13 @@ class TestPosition(unittest.TestCase):
     self.assertEquals(None, position.exit_commission)
     self.assertEquals(Decimal('2000'), position.shares)
     self.assertEquals(Decimal('180'), position.stop)
+
+  def test_get_open_positions(self):
+    positions = Position.get_open_positions()
+    for position in positions:
+      self.assertTrue(isinstance(position, Position))
+      self.assertEquals(None, position.exit_date)
+      
  
 if __name__ == '__main__':
     unittest.main()

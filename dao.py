@@ -84,6 +84,13 @@ class Query:
     cursor.execute(insert, values)
 
   @staticmethod 
+  def findall(claz, where, where_args):
+    table = claz.__name__
+    cols = ", ".join(claz.__cols__)
+    select = "SELECT %s FROM %s where (%s)" % (cols, table, where)
+    return Query(select, where_args).fillall(claz)
+
+  @staticmethod 
   def find(claz, where, where_args):
     table = claz.__name__
     cols = ", ".join(claz.__cols__)
@@ -98,8 +105,11 @@ class Position(Base):
   @staticmethod
   def get_position(symbol, date):
     return Query.find(Position, 'symbol = %s and enter_date = %s', (symbol, date))
-    pass
 
+  @staticmethod
+  def get_open_positions():
+    return Query.findall(Position, 'exit_date IS NULL', ())
+  
   @staticmethod
   def open(symbol, currency, currency_rate, enter_date, enter_price,
        enter_commission, shares, stop):
