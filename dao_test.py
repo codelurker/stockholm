@@ -116,7 +116,6 @@ class TestIndicator(unittest.TestCase):
     quote  = Quote({'close': 10})
     indicator = Indicator({'atr_14': 1})
     quote.get_day_indicator = Mock(return_value=indicator)
-    indicator.atr_stop = 3
     self.assertEqual(7, indicator.calculate_stop(quote))
     
     indicator.atr_stop = 1
@@ -125,6 +124,12 @@ class TestIndicator(unittest.TestCase):
 class TestQuery(unittest.TestCase):
   class Dummy(Base):
     pass
+
+  def test_keys(self):
+    query = Query("select a,b,c from bah", ())
+    self.assertEquals(['a', 'b', 'c'], query.keys_())
+    query = Query("select a,b,c  from bah", ())
+    self.assertEquals(['a', 'b', 'c'], query.keys_())
 
   def test_fillone(self):
     query = Query("select a,b,c from bah", ())
@@ -157,6 +162,24 @@ class TestQuery(unittest.TestCase):
     self.assertTrue(isinstance(dummies[1], TestQuery.Dummy))
     self.assertTrue(3, dummies[1].a)
     self.assertTrue(4, dummies[1].b)
+
+class TestPosition(unittest.TestCase):
+  def test_get_position(self):
+    position = Position.get_position('MILL', '2010-09-09')  
+    self.assertTrue(isinstance(position, Position))
+    self.assertEquals('MILL', position.symbol)
+    self.assertEquals('2010-09-09', str(position.enter_date))
+    self.assertEquals('2010-09-29', str(position.exit_date))
+    self.assertEquals('SEK', position.currency)
+    self.assertEquals(Decimal('1'), position.currency_rate)
+    self.assertEquals(Decimal('719.50'), position.enter_price)
+    self.assertEquals(Decimal('647'), position.exit_price)
+    self.assertEquals(Decimal('99'), position.enter_commission)
+    self.assertEquals(Decimal('99'), position.exit_commission)
+    self.assertEquals(Decimal('30'), position.shares)
+    self.assertEquals(Decimal('647'), position.stop)
+    self.assertEquals(1, position.portfolio_id)
+
 
 if __name__ == '__main__':
     unittest.main()

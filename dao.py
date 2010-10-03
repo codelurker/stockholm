@@ -30,7 +30,10 @@ class Query:
     return self
 
   def keys_(self):
-    return re.split(' *, *', re.search('SELECT (.*) FROM', self.query, flags=re.IGNORECASE).group(1))
+    keys = re.split(' *, *', re.search('SELECT (.*) FROM', self.query, flags=re.IGNORECASE).group(1))
+    for i, key in enumerate(keys):
+      keys[i] = key.strip()
+    return keys
 
   def fetchone_(self):
     return self.cursor.fetchone()
@@ -59,8 +62,16 @@ class Query:
     return aclass(d)
    
 class Position(Base):
-  pass
-
+  @staticmethod
+  def get_position(symbol, date):
+    quote = Query("SELECT"
+                  " symbol, currency, currency_rate, enter_date, exit_date,"
+                  " enter_price, exit_price, enter_commission,"
+                  " exit_commission, shares, stop, portfolio_id "
+                  " from position"
+                  " where symbol = %s and enter_date = %s", (symbol, date))
+    return quote.fillone(Position)
+  
 class Quote(Base):
   start_date = "2010-01-01"
   
@@ -102,6 +113,7 @@ class Quote(Base):
     return Indicator.get_indicator(self.symbol, self.date)
     
 class Indicator(Base):
+  atr_stop = 3
   def calculate_stop(self, quote):
     return float(quote.close) - float(self.atr_14) * float(self.atr_stop);
 
