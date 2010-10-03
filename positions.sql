@@ -1,6 +1,6 @@
 DROP TABLE position;
 CREATE TABLE position (
-  symbol varchar(8) not null,
+  symbol varchar(20) not null,
   currency varchar(3) not null,
   currency_rate decimal(10, 5) not null, -- How do I convert to the portfolio currency ?
   enter_date date not null,

@@ -16,9 +16,9 @@ INSERT INTO quote VALUES
 
 TRUNCATE TABLE position;
 INSERT INTO position VALUES 
-('MILL',   'SEK', 1, '2010-09-09', '2010-09-29', 719.50,  647.0,  99 , 99,    30,     602, 1),
-('LUPE',   'SEK', 1, '2010-09-28',         null,     55,   null,  99, null, 2400,    53.5, 1),
-('AAPL',   'USD', 1, '2010-07-05',         null, 259.98,   null, 109, null,   15,     234, 1),
-('AXIS',   'SEK', 1, '2010-09-22',         null,     92,   null,  99, null,  450,      85, 1),
-('BOL.ST', 'SEK', 1, '2010-09-14',         null,     97.5, null,  99, null,  250,   83.95, 1)
+('MIC-SDB.ST', 'SEK', 1, '2010-09-09', '2010-09-29', 719.50,  647.0,  99 , 99,    30,     602, 1),
+('LUPE.ST',    'SEK', 1, '2010-09-28',         null,     55,   null,  99, null, 2400,    53.5, 1),
+('AAPL',       'USD', 1, '2010-07-05',         null, 259.98,   null, 109, null,   15,     234, 1),
+('AXIS.ST',    'SEK', 1, '2010-09-22',         null,     92,   null,  99, null,  450,      85, 1),
+('BOL.ST',     'SEK', 1, '2010-09-14',         null,     97.5, null,  99, null,  250,   83.95, 1)
 ;

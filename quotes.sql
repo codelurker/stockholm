@@ -1,6 +1,6 @@
 DROP TABLE quote;
 CREATE TABLE quote (
-  symbol varchar(8) not null,
+  symbol varchar(20) not null,
   date date not null,
   close decimal(10, 5) not null,
   high decimal(10, 5) not null,

@@ -10,6 +10,18 @@ from dao import Indicator
 
 class TestQuote(unittest.TestCase):
 
+  def test_get_latest_quote(self):
+    quote = Quote.get_latest_quote('AAPL')
+    self.assertEquals('AAPL', quote.symbol)
+    self.assertEquals(('2001-01-03'), str(quote.date))
+
+  def test_get_latest_quote(self):
+    try:
+      Quote.get_latest_quote('abracadabra')
+      self.fail("Expected error")
+    except Quote.NotFound:
+      pass
+
   def test_has_met_stop_long(self):
     position = Position({'stop': 10})
     position.is_long = True 
@@ -165,9 +177,9 @@ class TestQuery(unittest.TestCase):
 
 class TestPosition(unittest.TestCase):
   def test_get_position(self):
-    position = Position.get_position('MILL', '2010-09-09')  
+    position = Position.get_position('MIC-SDB.ST', '2010-09-09')
     self.assertTrue(isinstance(position, Position))
-    self.assertEquals('MILL', position.symbol)
+    self.assertEquals('MIC-SDB.ST', position.symbol)
     self.assertEquals('2010-09-09', str(position.enter_date))
     self.assertEquals('2010-09-29', str(position.exit_date))
     self.assertEquals('SEK', position.currency)
@@ -201,12 +213,23 @@ class TestPosition(unittest.TestCase):
       self.assertTrue(isinstance(position, Position))
       self.assertEquals(None, position.exit_date)
   
+  def test_get_gain(self):
+    position = Position({
+        'shares': 1000, 'enter_price': Decimal('10'),
+        'enter_commission': Decimal('99') })    
+    self.assertEquals(Decimal('-99'), position.get_gain(Decimal('10')))
+    self.assertEquals(Decimal('901'), position.get_gain(Decimal('11')))
+    
   def test_get_risk(self):
-    position = Position({'stop': Decimal('8'), 'enter_price': Decimal('10')})    
-    self.assertEquals(2, position.get_risk())
+    position = Position({'stop': Decimal('8'),
+        'shares': 1000, 'enter_price': Decimal('10'),
+        'enter_commission': Decimal('99') })    
+    self.assertEquals(2099, position.get_risk())
   
   def test_get_rtr(self):
-    position = Position({'stop': Decimal('8'), 'enter_price': Decimal('10')})    
+    position = Position({'stop': Decimal('8'),
+        'shares': 1, 'enter_price': Decimal('9'),
+        'enter_commission': Decimal('1') })    
     self.assertEquals(0, position.get_rtr(10))
     self.assertEquals(1, position.get_rtr(12))
     self.assertEquals(2, position.get_rtr(14))

@@ -87,14 +87,14 @@ class Query:
   def findall(claz, where, where_args):
     table = claz.__name__
     cols = ", ".join(claz.__cols__)
-    select = "SELECT %s FROM %s where (%s)" % (cols, table, where)
+    select = "SELECT %s FROM %s where %s" % (cols, table, where)
     return Query(select, where_args).fillall(claz)
 
   @staticmethod 
   def find(claz, where, where_args):
     table = claz.__name__
     cols = ", ".join(claz.__cols__)
-    select = "SELECT %s FROM %s where (%s)" % (cols, table, where)
+    select = "SELECT %s FROM %s where %s" % (cols, table, where)
     return Query(select, where_args).fillone(claz)
 
 class Position(Base):
@@ -125,7 +125,7 @@ class Position(Base):
         The risk is the amount of money you would loose if you
         sold the position at the stop value
     """
-    return self.enter_price - self.stop
+    return self.shares * (self.enter_price - self.stop) + self.enter_commission
   
   def get_rtr(self, price):
     """ 
@@ -137,13 +137,23 @@ class Position(Base):
             calculation
     """
     
-    gain = price - self.enter_price
     risk = self.get_risk()
-    return gain / risk
+    return self.get_gain(price) / risk
+    
+  def get_gain(self, price):
+    return self.shares * (price - self.enter_price) - self.enter_commission
 
 class Quote(Base):
   start_date = "2010-01-01"
+  __cols__ = ["symbol", "date", "open", "high", "low", "close", "tr"]
   
+  class NotFound(Exception):
+    def __init__(self, message):
+      self.message = message
+
+    def __str__(self):
+      return repr(self.message)
+
   def has_met_stop(self, position):
     if position.is_long:
       return self.close >= position.stop
@@ -165,6 +175,14 @@ class Quote(Base):
   def get_quotes(symbol):
     c = Query("SELECT symbol, date, open, high, low, close, tr from quote where symbol = %s and date > %s order by date asc", (symbol, Quote.start_date))
     return c.fillall(Quote)
+
+  @staticmethod
+  def get_latest_quote(symbol):
+    quote = Query.find(Quote, "symbol = %s order by date desc limit 1", (symbol))
+    if quote:
+      return quote 
+    else:
+      raise Quote.NotFound("Could not find lates quote for %s" % symbol)
 
   @staticmethod
   def get_quote(symbol, date):
