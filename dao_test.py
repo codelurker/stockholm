@@ -177,7 +177,7 @@ class TestPosition(unittest.TestCase):
     self.assertEquals(Decimal('99'), position.enter_commission)
     self.assertEquals(Decimal('99'), position.exit_commission)
     self.assertEquals(Decimal('30'), position.shares)
-    self.assertEquals(Decimal('647'), position.stop)
+    self.assertEquals(Decimal('602'), position.stop)
     self.assertEquals(1, position.portfolio_id)
 
   def test_open(self):
