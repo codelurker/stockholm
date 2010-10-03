@@ -180,6 +180,20 @@ class TestPosition(unittest.TestCase):
     self.assertEquals(Decimal('647'), position.stop)
     self.assertEquals(1, position.portfolio_id)
 
-
+  def test_open(self):
+    Position.open('AAPL', 'SEK', 1, '2001-02-03', 200, 99, 2000, 180)
+    position = Position.get_position('AAPL', '2001-02-03')  
+    self.assertEquals('AAPL', position.symbol)
+    self.assertEquals('2001-02-03', str(position.enter_date))
+    self.assertEquals(None, position.exit_date)
+    self.assertEquals('SEK', position.currency)
+    self.assertEquals(Decimal('1.0'), position.currency_rate)
+    self.assertEquals(Decimal('200'), position.enter_price)
+    self.assertEquals(None, position.exit_price)
+    self.assertEquals(Decimal('99'), position.enter_commission)
+    self.assertEquals(None, position.exit_commission)
+    self.assertEquals(Decimal('2000'), position.shares)
+    self.assertEquals(Decimal('180'), position.stop)
+ 
 if __name__ == '__main__':
     unittest.main()

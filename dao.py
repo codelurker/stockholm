@@ -14,13 +14,21 @@ class Base:
     for k,v in self.__dict__.items():
       s += " %s:%s" % (k,v)
     return s
+
+  def save(self):
+    Query.save(self.__class__, self.__dict__)
  
 class Query:
+  db=MySQLdb.connect(host="localhost", user="robcos",
+                      passwd="robcos", db="stocks")
   def __init__(self, query, params):
     self.query = query
     self.params = params
-    self.db=MySQLdb.connect(host="localhost", user="robcos",
-                      passwd="robcos", db="stocks")
+
+  @staticmethod
+  def get_cols(cols):
+    return ", ".join(cols)
+
   def execute(self):
     self.cursor = self.db.cursor()
     self.cursor.execute(self.query, self.params)
@@ -60,17 +68,46 @@ class Query:
     for i, k in enumerate(self.keys_()):
       d[k] = values[i]
     return aclass(d)
-   
+ 
+  @staticmethod 
+  def save(claz, dictionary):
+    table = claz.__name__
+    keys = dictionary.keys()
+    cols = ", ".join(keys)
+    values = []
+    value_places = []
+    for k in keys:
+      value_places.append("%s")
+      values.append(dictionary.get(k))
+    insert = "INSERT INTO %s (%s) values (%s)" % (table, cols, ", ".join(value_places))
+    cursor = Query.db.cursor()
+    cursor.execute(insert, values)
+
+  @staticmethod 
+  def find(claz, where, where_args):
+    table = claz.__name__
+    cols = ", ".join(claz.__cols__)
+    select = "SELECT %s FROM %s where (%s)" % (cols, table, where)
+    return Query(select, where_args).fillone(claz)
+
 class Position(Base):
+  __cols__ = ["symbol", "currency", "currency_rate", "enter_date", "exit_date,"
+      "enter_price", "exit_price", "enter_commission", "exit_commission",
+      "shares", "stop", "portfolio_id"]
+
   @staticmethod
   def get_position(symbol, date):
-    quote = Query("SELECT"
-                  " symbol, currency, currency_rate, enter_date, exit_date,"
-                  " enter_price, exit_price, enter_commission,"
-                  " exit_commission, shares, stop, portfolio_id "
-                  " from position"
-                  " where symbol = %s and enter_date = %s", (symbol, date))
-    return quote.fillone(Position)
+    return Query.find(Position, 'symbol = %s and enter_date = %s', (symbol, date))
+    pass
+
+  @staticmethod
+  def open(symbol, currency, currency_rate, enter_date, enter_price,
+       enter_commission, shares, stop):
+    position = Position({'symbol': symbol, 'currency': currency, 
+        'currency_rate': currency_rate, 'enter_date': enter_date, 
+        'enter_price': enter_price, 'enter_commission': enter_commission,
+        'shares': shares, 'portfolio_id': 1, 'stop': stop})
+    position.save();
   
 class Quote(Base):
   start_date = "2010-01-01"
