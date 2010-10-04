@@ -2,6 +2,7 @@ import ystockquote
 import time
 import datetime
 from datetime import date
+from decimal import Decimal
 import MySQLdb
 import re
 
@@ -141,6 +142,13 @@ class Position(Base):
     
     risk = self.get_risk()
     return self.get_gain() / risk
+  
+  def get_value(self, currency):
+    """
+        Returns the value of the position, i.e. what you would get
+        if you sold the position now.
+    """
+    return self.shares * self.current_quote.close * Currency.get_rate(self.currency + currency)
     
   def get_gain(self):
     return self.shares * (self.current_quote.close - self.enter_price) - self.enter_commission
@@ -219,11 +227,23 @@ class Indicator(Base):
     c = Query('SELECT symbol, date, sma_20, sma_50, atr_14 FROM indicator i WHERE i.symbol = %s AND i.date <=%s ORDER BY i.date desc LIMIT %s', (symbol, date, days))
     return c.fillall(Indicator)
 
-class Portfolio(Base):
+class Currency(Base):
 
+  @staticmethod
+  def get_rate(type):
+    if type == 'USDSEK':
+      return Decimal('6.70654106')
+    if type == 'SEKSEK':
+      return Decimal('1')
+
+class Portfolio(Base):
+  
   @staticmethod
   def get_portfolio(id):
     positions = Position.get_open_positions(1)
     for position in positions:
       position.current_quote = Quote.get_latest_quote(position.symbol)
-    return Portfolio({'positions': positions})
+    return Portfolio({'positions': positions, 'currency': 'SEK'})
+
+  def get_value(self):
+    return sum(map(lambda p: p.get_value(self.currency), self.positions))

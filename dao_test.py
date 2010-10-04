@@ -240,6 +240,13 @@ class TestPosition(unittest.TestCase):
     position.current_quote = Quote({'close': Decimal('14')})
     self.assertEquals(2, position.get_rtr())
 
+  @patch("dao.Currency.get_rate")
+  def test_get_value(self, get_rate):
+    position = Position({'shares': 10, 'currency': 'USD'})    
+    get_rate.return_value = Decimal('7')
+    position.current_quote = Quote({'close': Decimal('10')})
+    self.assertEquals(700, position.get_value('SEK'))
+
 class TestPortfolio(unittest.TestCase):
 
   @patch("dao.Quote.get_latest_quote")
@@ -265,6 +272,18 @@ class TestPortfolio(unittest.TestCase):
       quote = position.current_quote
       self.assertTrue(isinstance(quote, Quote))
       self.assertEquals(quote.symbol, position.symbol)
+
+  def test_get_value(self):
+    positions = [
+      Position({'symbol': 'AAPL'}), 
+      Position({'symbol': 'LUPE.ST'})
+    ]
+    positions[0].get_value = Mock(return_value = Decimal('60'))
+    positions[1].get_value = Mock(return_value = Decimal('40'))
+    portfolio = Portfolio({'positions': positions, 'currency': 'EUR'})
+    self.assertEquals(100, portfolio.get_value())
+    positions[0].get_value.assert_called_with('EUR')
+    positions[1].get_value.assert_called_with('EUR')
 
 if __name__ == '__main__':
     unittest.main()
