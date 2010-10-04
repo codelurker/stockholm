@@ -1,12 +1,9 @@
 import unittest
 from mock import Mock
+from mock import patch
 
 from decimal import Decimal
-from dao import Base 
-from dao import Query 
-from dao import Quote 
-from dao import Position
-from dao import Indicator
+from dao import * 
 
 class TestQuote(unittest.TestCase):
 
@@ -208,7 +205,11 @@ class TestPosition(unittest.TestCase):
     self.assertEquals(Decimal('180'), position.stop)
 
   def test_get_open_positions(self):
-    positions = Position.get_open_positions()
+    positions = Position.get_open_positions(1234)
+    self.assertFalse(positions)
+
+    positions = Position.get_open_positions(1)
+    self.assertTrue(len(positions)>0)
     for position in positions:
       self.assertTrue(isinstance(position, Position))
       self.assertEquals(None, position.exit_date)
@@ -217,8 +218,10 @@ class TestPosition(unittest.TestCase):
     position = Position({
         'shares': 1000, 'enter_price': Decimal('10'),
         'enter_commission': Decimal('99') })    
-    self.assertEquals(Decimal('-99'), position.get_gain(Decimal('10')))
-    self.assertEquals(Decimal('901'), position.get_gain(Decimal('11')))
+    position.current_quote = Quote({'close': Decimal('10')})
+    self.assertEquals(Decimal('-99'), position.get_gain())
+    position.current_quote = Quote({'close': Decimal('11')})
+    self.assertEquals(Decimal('901'), position.get_gain())
     
   def test_get_risk(self):
     position = Position({'stop': Decimal('8'),
@@ -230,9 +233,38 @@ class TestPosition(unittest.TestCase):
     position = Position({'stop': Decimal('8'),
         'shares': 1, 'enter_price': Decimal('9'),
         'enter_commission': Decimal('1') })    
-    self.assertEquals(0, position.get_rtr(10))
-    self.assertEquals(1, position.get_rtr(12))
-    self.assertEquals(2, position.get_rtr(14))
+    position.current_quote = Quote({'close': Decimal('10')})
+    self.assertEquals(0, position.get_rtr())
+    position.current_quote = Quote({'close': Decimal('12')})
+    self.assertEquals(1, position.get_rtr())
+    position.current_quote = Quote({'close': Decimal('14')})
+    self.assertEquals(2, position.get_rtr())
+
+class TestPortfolio(unittest.TestCase):
+
+  @patch("dao.Quote.get_latest_quote")
+  @patch("dao.Position.get_open_positions")
+  def test_get_portfolio(self, get_open_positions, get_latest_quote):
+    positions = [
+      Position({'symbol': 'AAPL'}), 
+      Position({'symbol': 'LUPE.ST'})
+    ]
+    get_open_positions.return_value = positions
+    quotes = [
+      Quote({'symbol': 'LUPE.ST'}),
+      Quote({'symbol': 'AAPL'})
+    ]
+    def side_effect(*args, **kwargs):
+      return quotes.pop()
+    get_latest_quote.side_effect = side_effect
+    portfolio = Portfolio.get_portfolio(1)
+    self.assertTrue(isinstance(portfolio, Portfolio))
+    self.assertEquals(positions, portfolio.positions)
+    get_open_positions.assert_called_with(1)
+    for position in positions:
+      quote = position.current_quote
+      self.assertTrue(isinstance(quote, Quote))
+      self.assertEquals(quote.symbol, position.symbol)
 
 if __name__ == '__main__':
     unittest.main()

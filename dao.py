@@ -16,7 +16,7 @@ class Base:
     return s
 
   def save(self):
-    Query.save(self.__class__, self.__dict__)
+    Query.save(self)
  
 class Query:
   db=MySQLdb.connect(host="localhost", user="robcos",
@@ -70,15 +70,15 @@ class Query:
     return aclass(d)
  
   @staticmethod 
-  def save(claz, dictionary):
-    table = claz.__name__
-    keys = dictionary.keys()
+  def save(object):
+    table = object.__class__.__name__
+    keys = object.__cols__
     cols = ", ".join(keys)
     values = []
     value_places = []
     for k in keys:
       value_places.append("%s")
-      values.append(dictionary.get(k))
+      values.append(object.__dict__.get(k))
     insert = "INSERT INTO %s (%s) values (%s)" % (table, cols, ", ".join(value_places))
     cursor = Query.db.cursor()
     cursor.execute(insert, values)
@@ -98,17 +98,21 @@ class Query:
     return Query(select, where_args).fillone(claz)
 
 class Position(Base):
-  __cols__ = ["symbol", "currency", "currency_rate", "enter_date", "exit_date,"
+  __cols__ = ["symbol", "currency", "currency_rate", "enter_date", "exit_date",
       "enter_price", "exit_price", "enter_commission", "exit_commission",
       "shares", "stop", "portfolio_id"]
 
+  def __init__(self, args): 
+    Base.__init__(self, args)
+    self.current_quote = None
+  
   @staticmethod
   def get_position(symbol, date):
     return Query.find(Position, 'symbol = %s and enter_date = %s', (symbol, date))
 
   @staticmethod
-  def get_open_positions():
-    return Query.findall(Position, 'exit_date IS NULL', ())
+  def get_open_positions(portfolio_id):
+    return Query.findall(Position, 'exit_date IS NULL and portfolio_id = %s', (portfolio_id))
   
   @staticmethod
   def open(symbol, currency, currency_rate, enter_date, enter_price,
@@ -127,21 +131,19 @@ class Position(Base):
     """
     return self.shares * (self.enter_price - self.stop) + self.enter_commission
   
-  def get_rtr(self, price):
+  def get_rtr(self):
     """ 
         Returns the reward to risk ratio for this position.
         The rts is the number of times the money you risked
         yielded by this position
         
-        price -- The price that should be used in the 
-            calculation
     """
     
     risk = self.get_risk()
-    return self.get_gain(price) / risk
+    return self.get_gain() / risk
     
-  def get_gain(self, price):
-    return self.shares * (price - self.enter_price) - self.enter_commission
+  def get_gain(self):
+    return self.shares * (self.current_quote.close - self.enter_price) - self.enter_commission
 
 class Quote(Base):
   start_date = "2010-01-01"
@@ -216,3 +218,12 @@ class Indicator(Base):
     """
     c = Query('SELECT symbol, date, sma_20, sma_50, atr_14 FROM indicator i WHERE i.symbol = %s AND i.date <=%s ORDER BY i.date desc LIMIT %s', (symbol, date, days))
     return c.fillall(Indicator)
+
+class Portfolio(Base):
+
+  @staticmethod
+  def get_portfolio(id):
+    positions = Position.get_open_positions(1)
+    for position in positions:
+      position.current_quote = Quote.get_latest_quote(position.symbol)
+    return Portfolio({'positions': positions})
