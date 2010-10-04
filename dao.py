@@ -188,6 +188,12 @@ class Quote(Base):
 
   @staticmethod
   def get_latest_quote(symbol):
+    if symbol == 'CASH' or symbol == 'FUNDS':
+      return Quote({'symbol': symbol, 
+        'open': Decimal(1), 
+        'high': Decimal(1), 
+        'low': Decimal(1), 
+        'close': Decimal(1)})
     quote = Query.find(Quote, "symbol = %s order by date desc limit 1", (symbol))
     if quote:
       return quote 

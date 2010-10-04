@@ -13,6 +13,22 @@ class TestQuote(unittest.TestCase):
     self.assertEquals(('2001-01-03'), str(quote.date))
 
   def test_get_latest_quote(self):
+    quote = Quote.get_latest_quote('CASH')
+    self.assertEquals('CASH', quote.symbol)
+    self.assertEquals(Decimal('1'), quote.close)
+    self.assertEquals(Decimal('1'), quote.high)
+    self.assertEquals(Decimal('1'), quote.low)
+    self.assertEquals(Decimal('1'), quote.open)
+
+  def test_get_latest_quote(self):
+    quote = Quote.get_latest_quote('FUNDS')
+    self.assertEquals('FUNDS', quote.symbol)
+    self.assertEquals(Decimal('1'), quote.close)
+    self.assertEquals(Decimal('1'), quote.high)
+    self.assertEquals(Decimal('1'), quote.low)
+    self.assertEquals(Decimal('1'), quote.open)
+
+  def test_get_latest_quote_not_found(self):
     try:
       Quote.get_latest_quote('abracadabra')
       self.fail("Expected error")

@@ -51,3 +51,6 @@ def insert(symbol, date, close, high, low, open):
 prices('LUPE.ST', 565)
 prices('AAPL', 565)
 prices('GOOG', 565)
+prices('AXIS.ST', 565)
+prices('MIC-SDB.ST', 565)
+prices('BOL.ST', 565)
