@@ -11,13 +11,23 @@ db=MySQLdb.connect(host="localhost", user="robcos",
 def build_averages(symbol, date):
   c = db.cursor()
   
-  c.execute("SELECT avg(close) from (select close as close from quote where date <= %s and symbol =%s order by date desc limit %s) as avf2", (date, symbol, 20))
+  c.execute("SELECT avg(close) from (select close as close from quote where date <= %s and symbol =%s order by date desc limit %s) as tbl", (date, symbol, 20))
   (sma_20, ) = c.fetchone()
-  c.execute("SELECT avg(close) from (select close as close from quote where date <= %s and symbol =%s order by date desc limit %s) as avf2", (date, symbol, 50))
+  c.execute("SELECT avg(close) from (select close as close from quote where date <= %s and symbol =%s order by date desc limit %s) as tbl", (date, symbol, 50))
   (sma_50, ) = c.fetchone()
-  c.execute("SELECT avg(tr) from (select tr from quote where date <= %s and symbol =%s order by date desc limit %s) as avf2", (date, symbol, 14))
+  c.execute("SELECT avg(tr) from (select tr from quote where date <= %s and symbol =%s order by date desc limit %s) as tbl", (date, symbol, 14))
   (atr_14, ) = c.fetchone()
-  c.execute("INSERT INTO indicator (date, symbol, sma_20, sma_50, atr_14) VALUES (%s, %s, %s, %s, %s)", (date, symbol, sma_20, sma_50, atr_14))
+
+  c.execute("SELECT min(low) from ("
+      "select low from quote where date <= %s"
+      " and symbol = %s order by date desc limit %s) as tbl",
+      (date, symbol, 20))
+  (ll_20, ) = c.fetchone()
+
+  c.execute("INSERT INTO indicator "
+      "(date, symbol, sma_20, sma_50, atr_14, ll_20)"
+      "VALUES (%s, %s, %s, %s, %s, %s)",
+      (date, symbol, sma_20, sma_50, atr_14, ll_20))
 
 def build_indicators():
   c = db.cursor()

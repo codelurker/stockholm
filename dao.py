@@ -107,6 +107,13 @@ class Position(Base):
     Base.__init__(self, args)
     self.current_quote = None
   
+  def should_sell(self):
+    return self.current_quote.close <= self.get_trailing_stop()
+     
+  def get_trailing_stop(self):
+    indicator = self.current_quote.get_indicator()
+    return None if indicator is None else indicator.ll_20
+
   @staticmethod
   def get_position(symbol, date):
     return Query.find(Position, 'symbol = %s and enter_date = %s', (symbol, date))
@@ -213,25 +220,26 @@ class Quote(Base):
     return Indicator.get_trailing_indicators(self.symbol, self.date, days)
 
   def get_indicator(self):
+    if self.symbol == 'CASH' or self.symbol == 'FUNDS':
+      return None
     return Indicator.get_indicator(self.symbol, self.date)
     
 class Indicator(Base):
+  __cols__ = ['symbol',' date', 'sma_20', 'sma_50', 'atr_14', 'll_20']
   atr_stop = 3
   def calculate_stop(self, quote):
     return float(quote.close) - float(self.atr_14) * float(self.atr_stop);
 
   @staticmethod
   def get_indicator(symbol, date):
-    query = Query('SELECT symbol, date, sma_20, sma_50, atr_14 FROM indicator i WHERE i.symbol = %s AND i.date = %s', (symbol, date))
-    return query.fillone(Indicator)
+    return Query.find(Indicator, 'symbol = %s and date = %s', (symbol, date))
 
   @staticmethod
   def get_trailing_indicators(symbol, date, days):
     """
       Returns the indicators for the last x days.
     """
-    c = Query('SELECT symbol, date, sma_20, sma_50, atr_14 FROM indicator i WHERE i.symbol = %s AND i.date <=%s ORDER BY i.date desc LIMIT %s', (symbol, date, days))
-    return c.fillall(Indicator)
+    return Query.findall(Indicator, 'symbol = %s AND date <=%s ORDER BY date desc LIMIT %s', (symbol, date, days))
 
 class Currency(Base):
 

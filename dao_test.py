@@ -92,6 +92,12 @@ class TestQuote(unittest.TestCase):
     self.assertEquals(indicator, quote.get_indicator())
     Indicator.get_indicator.assert_called_with('AAPL', '2001-01-02') 
 
+  def test_get_indicator(self):
+    quote = Quote({'symbol':'CASH'})
+    self.assertEquals(None, quote.get_indicator())
+    quote = Quote({'symbol':'FUNDS'})
+    self.assertEquals(None, quote.get_indicator())
+
   def test_get_trailing_indicators(self):
     quote = Quote({'symbol':'AAPL', 'date':'2001-01-02'})
     indicators = Indicator({})
@@ -262,6 +268,39 @@ class TestPosition(unittest.TestCase):
     get_rate.return_value = Decimal('7')
     position.current_quote = Quote({'close': Decimal('10')})
     self.assertEquals(700, position.get_value('SEK'))
+
+  def test_should_sell_when_below_stop(self):
+    position = Position({})    
+    position.current_quote = Quote({'close': Decimal('10')})
+    position.get_trailing_stop = Mock(return_value = Decimal('11'))
+    self.assertTrue(position.should_sell())
+
+  def test_should_sell_not_when_above_stop(self):
+    position = Position({})    
+    position.current_quote = Quote({'close': Decimal('10')})
+    position.get_trailing_stop = Mock(return_value = Decimal('9'))
+    self.assertFalse(position.should_sell())
+
+  def test_should_sell_when_equal_stop(self):
+    position = Position({})    
+    position.current_quote = Quote({'close': Decimal('10')})
+    position.get_trailing_stop = Mock(return_value = Decimal('10'))
+    self.assertTrue(position.should_sell())
+  
+  def test_get_trailing_stop(self):
+    position = Position({})    
+    position.current_quote = Quote({})
+    indicator = Indicator({'ll_20': Decimal('20')})
+    position.current_quote.get_indicator = Mock(return_value = indicator)
+    self.assertEquals(Decimal('20'), position.get_trailing_stop())
+
+  def test_get_trailing_stop_when_no_indicator(self):
+    position = Position({})    
+    position.current_quote = Quote({})
+    indicator = Indicator({'ll_20': Decimal('20')})
+    position.current_quote.get_indicator = Mock(return_value = None)
+    self.assertEquals(None, position.get_trailing_stop())
+
 
 class TestPortfolio(unittest.TestCase):
 
