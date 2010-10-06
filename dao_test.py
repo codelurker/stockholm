@@ -114,6 +114,30 @@ class TestQuote(unittest.TestCase):
     quote = Quote.get_quote('AAPL', '2001-01-02')
     self.assertEquals(Decimal('5678'), quote.tr)
 
+  def test_is_above_20_day_high_false(self):
+    quote = Quote({'close': Decimal('10')})
+    indicator = Indicator({'hh_20': Decimal('20')})
+    quote.get_indicator = Mock(return_value=indicator)
+    self.assertFalse(quote.is_above_20_day_high())
+ 
+  def test_is_above_20_day_high_true(self):
+    quote = Quote({'close': Decimal('30')})
+    indicator = Indicator({'hh_20': Decimal('20')})
+    quote.get_indicator = Mock(return_value=indicator)
+    self.assertTrue(quote.is_above_20_day_high())
+    
+  def test_is_below_10_day_low_true(self):
+    quote = Quote({'close': Decimal('10')})
+    indicator = Indicator({'ll_10': Decimal('20')})
+    quote.get_indicator = Mock(return_value=indicator)
+    self.assertTrue(quote.is_below_10_day_low())
+ 
+  def test_is_below_10_day_low_false(self):
+    quote = Quote({'close': Decimal('30')})
+    indicator = Indicator({'ll_10': Decimal('20')})
+    quote.get_indicator = Mock(return_value=indicator)
+    self.assertFalse(quote.is_below_10_day_low())
+ 
   def assertQuote(self, quote):
     self.assertEquals('AAPL', quote.symbol)
     self.assertEquals(('2001-01-01'), str(quote.date))
@@ -290,21 +314,21 @@ class TestPosition(unittest.TestCase):
   def test_get_trailing_stop(self):
     position = Position({'stop': Decimal('10')})    
     position.current_quote = Quote({})
-    indicator = Indicator({'ll_20': Decimal('20')})
+    indicator = Indicator({'ll_10': Decimal('20')})
     position.current_quote.get_indicator = Mock(return_value = indicator)
     self.assertEquals(Decimal('20'), position.get_trailing_stop())
 
-  def test_get_trailing_stop_when_ll_20_lower_than_stop(self):
+  def test_get_trailing_stop_when_ll_10_lower_than_stop(self):
     position = Position({'stop': Decimal('30')})    
     position.current_quote = Quote({})
-    indicator = Indicator({'ll_20': Decimal('20')})
+    indicator = Indicator({'ll_10': Decimal('20')})
     position.current_quote.get_indicator = Mock(return_value = indicator)
     self.assertEquals(Decimal('30'), position.get_trailing_stop())
 
   def test_get_trailing_stop_when_no_indicator(self):
     position = Position({'stop': Decimal('10')})    
     position.current_quote = Quote({})
-    indicator = Indicator({'ll_20': Decimal('20')})
+    indicator = Indicator({'ll_10': Decimal('20')})
     position.current_quote.get_indicator = Mock(return_value = None)
     self.assertEquals(None, position.get_trailing_stop())
 

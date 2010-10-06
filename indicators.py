@@ -21,13 +21,20 @@ def build_averages(symbol, date):
   c.execute("SELECT min(low) from ("
       "select low from quote where date <= %s"
       " and symbol = %s order by date desc limit %s) as tbl",
+      (date, symbol, 10))
+  (ll_10, ) = c.fetchone()
+
+  c.execute("SELECT max(high) from ("
+      "select high from quote where date <= %s"
+      " and symbol = %s order by date desc limit %s) as tbl",
       (date, symbol, 20))
-  (ll_20, ) = c.fetchone()
+  (hh_20, ) = c.fetchone()
+
 
   c.execute("INSERT INTO indicator "
-      "(date, symbol, sma_20, sma_50, atr_14, ll_20)"
-      "VALUES (%s, %s, %s, %s, %s, %s)",
-      (date, symbol, sma_20, sma_50, atr_14, ll_20))
+      "(date, symbol, sma_20, sma_50, atr_14, ll_10, hh_20)"
+      "VALUES (%s, %s, %s, %s, %s, %s, %s)",
+      (date, symbol, sma_20, sma_50, atr_14, ll_10, hh_20))
 
 def build_indicators():
   c = db.cursor()

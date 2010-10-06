@@ -118,7 +118,7 @@ class Position(Base):
         acceptable loss in any case
     """
     indicator = self.current_quote.get_indicator()
-    return None if indicator is None else max(indicator.ll_20, self.stop)
+    return None if indicator is None else max(indicator.ll_10, self.stop)
 
   @staticmethod
   def get_position(symbol, date):
@@ -231,8 +231,14 @@ class Quote(Base):
       return None
     return Indicator.get_indicator(self.symbol, self.date)
     
+  def is_above_20_day_high(self):
+    return self.close > self.get_indicator().hh_20
+
+  def is_below_10_day_low(self):
+    return self.close < self.get_indicator().ll_10
+
 class Indicator(Base):
-  __cols__ = ['symbol',' date', 'sma_20', 'sma_50', 'atr_14', 'll_20']
+  __cols__ = ['symbol',' date', 'sma_20', 'sma_50', 'atr_14', 'll_10', 'hh_20']
   atr_stop = 3
   def calculate_stop(self, quote):
     return float(quote.close) - float(self.atr_14) * float(self.atr_stop);

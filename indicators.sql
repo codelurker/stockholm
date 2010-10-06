@@ -5,6 +5,7 @@ CREATE TABLE indicator (
   sma_20 decimal(10, 5) not null,
   sma_50 decimal(10, 5) not null,
   atr_14 decimal(10, 5) default null,
-  ll_20 decimal(10, 5) default null, -- Lowest low in the last 20 days
+  ll_10 decimal(10, 5) default null, -- Lowest low in the last 10 days
+  hh_20 decimal(10, 5) default null, -- Highest high in the last 20 days
   primary key (symbol, date)
 );
