@@ -109,10 +109,16 @@ class Position(Base):
   
   def should_sell(self):
     return self.current_quote.close <= self.get_trailing_stop()
-     
+ 
   def get_trailing_stop(self):
+    """ 
+        Returns the lowest low of the past 20 days.
+        If the value is lower than the initial stop,
+        it returns the stop as that is the maximum
+        acceptable loss in any case
+    """
     indicator = self.current_quote.get_indicator()
-    return None if indicator is None else indicator.ll_20
+    return None if indicator is None else max(indicator.ll_20, self.stop)
 
   @staticmethod
   def get_position(symbol, date):
@@ -197,6 +203,7 @@ class Quote(Base):
   def get_latest_quote(symbol):
     if symbol == 'CASH' or symbol == 'FUNDS':
       return Quote({'symbol': symbol, 
+        'date': "", 
         'open': Decimal(1), 
         'high': Decimal(1), 
         'low': Decimal(1), 
@@ -254,7 +261,7 @@ class Portfolio(Base):
   
   @staticmethod
   def get_portfolio(id):
-    positions = Position.get_open_positions(1)
+    positions = Position.get_open_positions(id)
     for position in positions:
       position.current_quote = Quote.get_latest_quote(position.symbol)
     return Portfolio({'positions': positions, 'currency': 'SEK'})

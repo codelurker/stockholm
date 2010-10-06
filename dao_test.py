@@ -288,19 +288,25 @@ class TestPosition(unittest.TestCase):
     self.assertTrue(position.should_sell())
   
   def test_get_trailing_stop(self):
-    position = Position({})    
+    position = Position({'stop': Decimal('10')})    
     position.current_quote = Quote({})
     indicator = Indicator({'ll_20': Decimal('20')})
     position.current_quote.get_indicator = Mock(return_value = indicator)
     self.assertEquals(Decimal('20'), position.get_trailing_stop())
 
+  def test_get_trailing_stop_when_ll_20_lower_than_stop(self):
+    position = Position({'stop': Decimal('30')})    
+    position.current_quote = Quote({})
+    indicator = Indicator({'ll_20': Decimal('20')})
+    position.current_quote.get_indicator = Mock(return_value = indicator)
+    self.assertEquals(Decimal('30'), position.get_trailing_stop())
+
   def test_get_trailing_stop_when_no_indicator(self):
-    position = Position({})    
+    position = Position({'stop': Decimal('10')})    
     position.current_quote = Quote({})
     indicator = Indicator({'ll_20': Decimal('20')})
     position.current_quote.get_indicator = Mock(return_value = None)
     self.assertEquals(None, position.get_trailing_stop())
-
 
 class TestPortfolio(unittest.TestCase):
 
