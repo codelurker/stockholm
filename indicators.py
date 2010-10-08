@@ -19,13 +19,13 @@ def build_averages(symbol, date):
   (atr_14, ) = c.fetchone()
 
   c.execute("SELECT min(low) from ("
-      "select low from quote where date <= %s"
+      "select low from quote where date < %s"
       " and symbol = %s order by date desc limit %s) as tbl",
       (date, symbol, 10))
   (ll_10, ) = c.fetchone()
 
   c.execute("SELECT max(high) from ("
-      "select high from quote where date <= %s"
+      "select high from quote where date < %s"
       " and symbol = %s order by date desc limit %s) as tbl",
       (date, symbol, 20))
   (hh_20, ) = c.fetchone()
