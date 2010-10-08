@@ -168,13 +168,11 @@ class TestIndicator(unittest.TestCase):
     self.assertEquals(('2001-01-02'), str(indicators[0].date))
   
   def test_calculate_stop(self):
-    quote  = Quote({'close': 10})
-    indicator = Indicator({'atr_14': 1})
-    quote.get_day_indicator = Mock(return_value=indicator)
-    self.assertEqual(8, indicator.calculate_stop(quote))
+    indicator = Indicator({'atr_14': Decimal(1)})
+    self.assertEqual(8, indicator.calculate_stop(Decimal(10)))
     
     indicator.atr_stop = 1
-    self.assertEqual(9, indicator.calculate_stop(quote))
+    self.assertEqual(9, indicator.calculate_stop(Decimal(10)))
   
 class TestQuery(unittest.TestCase):
   class Dummy(Base):
@@ -250,6 +248,28 @@ class TestPosition(unittest.TestCase):
     self.assertEquals(Decimal('2000'), position.shares)
     self.assertEquals(Decimal('180'), position.stop)
 
+  @patch("dao.Indicator.get_indicator")
+  def test_get_stop(self, get_indicator):
+    position = Position({
+        'symbol': 'AAPL',
+        'enter_date': '2010-01-01', 
+        'enter_price': Decimal('10')})    
+    indicator = Indicator({})
+    indicator.calculate_stop = Mock(return_value = Decimal(10))
+    get_indicator.return_value = indicator
+    position.current_quote = Quote({})
+    position.current_quote.is_cash = Mock(return_value = False)
+    self.assertEqual(Decimal(10), position.get_stop())
+    get_indicator.assert_called_with('AAPL', '2010-01-01')
+    indicator.calculate_stop.assert_called_with(Decimal('10'))
+ 
+  @patch("dao.Indicator.get_indicator")
+  def test_get_stop_for_cash(self, get_indicator):
+    position = Position({})    
+    position.current_quote = Quote({})
+    position.current_quote.is_cash = Mock(return_value = True)
+    self.assertEqual('', position.get_stop())
+ 
   def test_get_open_positions(self):
     positions = Position.get_open_positions(1234)
     self.assertFalse(positions)
@@ -330,7 +350,7 @@ class TestPosition(unittest.TestCase):
     position.current_quote = Quote({})
     indicator = Indicator({'ll_10': Decimal('20')})
     position.current_quote.get_indicator = Mock(return_value = None)
-    self.assertEquals(None, position.get_trailing_stop())
+    self.assertEquals('', position.get_trailing_stop())
 
 class TestPortfolio(unittest.TestCase):
 

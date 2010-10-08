@@ -118,7 +118,12 @@ class Position(Base):
         acceptable loss in any case
     """
     indicator = self.current_quote.get_indicator()
-    return None if indicator is None else max(indicator.ll_10, self.stop)
+    return "" if indicator is None else max(indicator.ll_10, self.stop)
+
+  def get_stop(self):
+    if(self.current_quote.is_cash()):
+      return ""
+    return Indicator.get_indicator(self.symbol, self.enter_date).calculate_stop(self.enter_price)
 
   @staticmethod
   def get_position(symbol, date):
@@ -191,6 +196,9 @@ class Quote(Base):
         return False
     return True
  
+  def is_cash(self):
+    return self.symbol == 'CASH' or self.symbol == 'FUNDS'
+
   @staticmethod
   def set_tr(symbol, date, value):
     c = Query("UPDATE quote SET tr = %s WHERE symbol = %s and date = %s", (value, symbol, date)).execute()
@@ -240,9 +248,10 @@ class Quote(Base):
 
 class Indicator(Base):
   __cols__ = ['symbol',' date', 'sma_20', 'sma_50', 'atr_14', 'll_10', 'hh_20']
-  atr_stop = 2
-  def calculate_stop(self, quote):
-    return float(quote.close) - float(self.atr_14) * float(self.atr_stop);
+  atr_stop = Decimal('2')
+
+  def calculate_stop(self, price):
+    return price - self.atr_14 * self.atr_stop
 
   @staticmethod
   def get_indicator(symbol, date):
