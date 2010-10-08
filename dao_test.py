@@ -171,7 +171,7 @@ class TestIndicator(unittest.TestCase):
     quote  = Quote({'close': 10})
     indicator = Indicator({'atr_14': 1})
     quote.get_day_indicator = Mock(return_value=indicator)
-    self.assertEqual(7, indicator.calculate_stop(quote))
+    self.assertEqual(8, indicator.calculate_stop(quote))
     
     indicator.atr_stop = 1
     self.assertEqual(9, indicator.calculate_stop(quote))

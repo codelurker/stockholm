@@ -11,10 +11,10 @@ class Base:
     self.__dict__ = dict_
  
   def __str__(self):
-    s = self.__class__.__name__
+    s = self.__class__.__name__ + '['
     for k,v in self.__dict__.items():
       s += " %s:%s" % (k,v)
-    return s
+    return s + ' ]'
 
   def save(self):
     Query.save(self)
@@ -104,8 +104,8 @@ class Position(Base):
       "shares", "stop", "portfolio_id"]
 
   def __init__(self, args): 
-    Base.__init__(self, args)
     self.current_quote = None
+    Base.__init__(self, args)
   
   def should_sell(self):
     return self.current_quote.close <= self.get_trailing_stop()
@@ -136,6 +136,7 @@ class Position(Base):
         'enter_price': enter_price, 'enter_commission': enter_commission,
         'shares': shares, 'portfolio_id': 1, 'stop': stop})
     position.save();
+    return position
   
   def get_risk(self):
     """ 
@@ -167,7 +168,7 @@ class Position(Base):
     return self.shares * (self.current_quote.close - self.enter_price) - self.enter_commission
 
 class Quote(Base):
-  start_date = "2010-01-01"
+  start_date = "2002-04-01"
   __cols__ = ["symbol", "date", "open", "high", "low", "close", "tr"]
   
   class NotFound(Exception):
@@ -239,7 +240,7 @@ class Quote(Base):
 
 class Indicator(Base):
   __cols__ = ['symbol',' date', 'sma_20', 'sma_50', 'atr_14', 'll_10', 'hh_20']
-  atr_stop = 3
+  atr_stop = 2
   def calculate_stop(self, quote):
     return float(quote.close) - float(self.atr_14) * float(self.atr_stop);
 
@@ -262,6 +263,8 @@ class Currency(Base):
       return Decimal('6.70654106')
     if type == 'SEKSEK':
       return Decimal('1')
+    if type == 'GBPSEK':
+      return Decimal('10.6558203')
 
 class Portfolio(Base):
   
