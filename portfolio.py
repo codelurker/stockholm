@@ -23,17 +23,19 @@ def print_portfolio(id):
   portfolio = Portfolio.get_portfolio(id)
   positions = portfolio.positions
   print "-------------------------------------------------------------------------------------------------------------------"
-  print "Symbol\tDate\tValue\tGain\tShares\tRTR\tClose\tStop\tC Stop\tT Stop\tSell"
+  print "Symbol\tEnter Date\tDate\tValue\tGain\tShares\tRTR\tEnter Price\tClose\tStop\tC Stop\tT Stop\tSell"
   print "-------------------------------------------------------------------------------------------------------------------"
   for p in positions:
-    print "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s" % ff(
+    print "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s" % ff(
       (
       p.symbol, 
+      p.enter_date,
       p.current_quote.date,
       p.get_value(portfolio.currency), 
       p.get_gain(), 
       p.shares, 
       p.get_rtr(), 
+      p.enter_price,
       p.current_quote.close, 
       p.stop,
       p.get_stop(),
