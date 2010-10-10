@@ -47,10 +47,16 @@ def insert(symbol, date, close, high, low, open):
   c = db.cursor()
   c.execute("INSERT INTO quote (date, symbol, close, high, low, open) VALUES (%s, %s, %s, %s, %s, %s)",
                (date, symbol, close, high, low, open))
-
-prices('LUPE.ST', 565)
-prices('AAPL', 565)
-prices('GOOG', 565)
-prices('AXIS.ST', 565)
-prices('MIC-SDB.ST', 565)
-prices('BOL.ST', 565)
+days=100
+prices('AAPL', days)
+prices('AGLD.L', days)
+prices('LUPE.ST', days)
+prices('GOOG', days)
+prices('AXIS.ST', days)
+prices('MIC-SDB.ST', days)
+prices('BOL.ST', days)
+prices('ERIC-A.ST', days)
+prices('HMB.ST', days)
+prices('TLSN.ST', days)
+prices('TEL2-A.ST', days)
+prices('RIO.L', days)
