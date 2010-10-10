@@ -6,19 +6,21 @@ import MySQLdb
 
 db=MySQLdb.connect(host="localhost", user="robcos",
                       passwd="robcos", db="stocks")
-def prices(symbol, days):
+def prices(symbol, start_date):
   """
-  Get the prices in the X days for the given symbol
-  
-  Returns an array
+  Loads the prices from the start date for the given symbol
+  Only new quotes are downloaded.
   """
-  ## adjust for weekends
-  days_adjusted = days/5*3 + days  
  
-  to = date.today()
-  _from = to - datetime.timedelta(days=days_adjusted)
-  to = to.strftime("%Y%m%d")
-  _from = _from.strftime("%Y%m%d")
+  to = date.today().strftime("%Y%m%d")
+  c = db.cursor()
+  c.execute("SELECT DATE_ADD(max(date), INTERVAL 1 DAY) FROM quote where symbol = %s",
+               (symbol))
+  (_from, ) = c.fetchone()
+  if _from is None: 
+    _from = start_date
+  else:
+    _from = _from.strftime("%Y%m%d")
   prices = ystockquote.get_historical_prices(symbol, _from, to)
   headers = prices[0]
   close = get_idx(headers, 'Close')
@@ -27,13 +29,10 @@ def prices(symbol, days):
   high = get_idx(headers, 'High')
   low = get_idx(headers, 'Low')
   quotes = prices[1:]
-  if (len(quotes) < days):
-    print "\n##### Warning: Could not load enough days of data (found %s quotes but requested %s)\n" % (len(quotes), days)
   for l in quotes:
-    #quotes.append(float(p[4]))
-    print "%s %s" % (l[date_], l[close])
+    #print "%s %s" % (l[date_], l[close])
     insert(symbol, l[date_], l[close], l[high], l[low], l[open])
-  return quotes
+  print "Inserted %s new quotes for %s" % (len(quotes), symbol)
 
 def get_idx(headers, query):
     for index, item in enumerate(headers):
@@ -47,16 +46,18 @@ def insert(symbol, date, close, high, low, open):
   c = db.cursor()
   c.execute("INSERT INTO quote (date, symbol, close, high, low, open) VALUES (%s, %s, %s, %s, %s, %s)",
                (date, symbol, close, high, low, open))
-days=100
-prices('AAPL', days)
-prices('AGLD.L', days)
-prices('LUPE.ST', days)
-prices('GOOG', days)
-prices('AXIS.ST', days)
-prices('MIC-SDB.ST', days)
-prices('BOL.ST', days)
-prices('ERIC-A.ST', days)
-prices('HMB.ST', days)
-prices('TLSN.ST', days)
-prices('TEL2-A.ST', days)
-prices('RIO.L', days)
+start_date='20100101'
+prices('AAPL', start_date)
+prices('AGLD.L', start_date)
+prices('LUPE.ST', start_date)
+prices('GOOG', start_date)
+prices('AXIS.ST', start_date)
+prices('MIC-SDB.ST', start_date)
+prices('BOL.ST', start_date)
+prices('ERIC-A.ST', start_date)
+prices('HMB.ST', start_date)
+prices('TLSN.ST', start_date)
+prices('TEL2-A.ST', start_date)
+prices('RIO.L', start_date)
+prices('SWEC-B.ST', start_date)
+prices('AZN.ST', start_date)
