@@ -39,11 +39,12 @@ def build_averages(symbol, date):
 def build_indicators():
   c = db.cursor()
   c.execute("select q.symbol, q.date from quote q left outer join indicator i on (q.date=i.date AND q.symbol=i.symbol) where i.symbol is null")
-  for (symbol, date) in c.fetchall():
+  missing_indicators = c.fetchall()
+  for (symbol, date) in missing_indicators:
     build_atr(symbol, date)
-  c.execute("select q.symbol, q.date from quote q left outer join indicator i on (q.date=i.date AND q.symbol=i.symbol) where i.symbol is null")
-  for (symbol, date) in c.fetchall():
+  for (symbol, date) in missing_indicators:
     build_averages(symbol, date)
+  print "Built %s missing indicators" % len(missing_indicators)
 
 def build_atr(symbol, date):
   quote = dao.Quote.get_quote(symbol, date)
