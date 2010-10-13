@@ -123,9 +123,12 @@ class Position(Base):
   def get_stop(self):
     if(self.current_quote.is_cash()):
       return ""
-    indicator = Indicator.get_indicator(self.symbol, self.enter_date)
-    return Indicator.get_indicator(self.symbol, self.enter_date).calculate_stop(self.enter_price)
+    return self.get_enter_indicator().calculate_stop(self.enter_price)
 
+  def get_enter_indicator(self):
+    indicator = Indicator.get_indicator(self.symbol, self.enter_date)
+    return indicator
+ 
   @staticmethod
   def get_position(symbol, date):
     return Query.find(Position, 'symbol = %s and enter_date = %s', (symbol, date))
@@ -222,7 +225,7 @@ class Quote(Base):
     if quote:
       return quote 
     else:
-      raise Quote.NotFound("Could not find lates quote for %s" % symbol)
+      raise Quote.NotFound("Could not find latest quote for %s" % symbol)
 
   @staticmethod
   def get_quote(symbol, date):

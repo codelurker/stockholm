@@ -250,18 +250,26 @@ class TestPosition(unittest.TestCase):
     self.assertEquals(Decimal('180'), position.stop)
 
   @patch("dao.Indicator.get_indicator")
-  def test_get_stop(self, get_indicator):
+  def test_get_enter_indicator(self, get_indicator):
+    position = Position({
+        'symbol': 'AAPL',
+        'enter_date': '2010-01-01'})
+    indicator = Indicator({})
+    get_indicator.return_value = indicator
+    self.assertEquals(indicator, position.get_enter_indicator())
+    get_indicator.assert_called_with('AAPL', '2010-01-01')
+ 
+  def test_get_stop(self):
     position = Position({
         'symbol': 'AAPL',
         'enter_date': '2010-01-01', 
         'enter_price': Decimal('10')})    
     indicator = Indicator({})
     indicator.calculate_stop = Mock(return_value = Decimal(10))
-    get_indicator.return_value = indicator
+    position.get_enter_indicator = Mock(return_value = indicator)
     position.current_quote = Quote({})
     position.current_quote.is_cash = Mock(return_value = False)
     self.assertEqual(Decimal(10), position.get_stop())
-    get_indicator.assert_called_with('AAPL', '2010-01-01')
     indicator.calculate_stop.assert_called_with(Decimal('10'))
  
   @patch("dao.Indicator.get_indicator")
