@@ -123,6 +123,7 @@ class Position(Base):
   def get_stop(self):
     if(self.current_quote.is_cash()):
       return ""
+    indicator = Indicator.get_indicator(self.symbol, self.enter_date)
     return Indicator.get_indicator(self.symbol, self.enter_date).calculate_stop(self.enter_price)
 
   @staticmethod
@@ -247,11 +248,11 @@ class Quote(Base):
     return self.close < self.get_indicator().ll_10
 
 class Indicator(Base):
-  __cols__ = ['symbol',' date', 'sma_20', 'sma_50', 'atr_14', 'll_10', 'hh_20']
+  __cols__ = ['symbol',' date', 'sma_20', 'sma_50', 'atr_exp20', 'atr_14', 'll_10', 'hh_20']
   atr_stop = Decimal('2')
 
   def calculate_stop(self, price):
-    return price - self.atr_14 * self.atr_stop
+    return price - self.atr_exp20 * self.atr_stop
 
   @staticmethod
   def get_indicator(symbol, date):

@@ -158,7 +158,8 @@ class TestIndicator(unittest.TestCase):
     self.assertEquals(('2001-01-01'), str(indicator.date))
     self.assertEquals(Decimal('100.1'), indicator.sma_20)
     self.assertEquals(Decimal('110.1'), indicator.sma_50)
-    self.assertEquals(Decimal('120.1'), indicator.atr_14)
+    self.assertEquals(Decimal('115.1'), indicator.atr_14)
+    self.assertEquals(Decimal('120.1'), indicator.atr_exp20)
   
   def test_get_trailing_indicators(self):
     indicators = Indicator.get_trailing_indicators('AAPL', '2001-01-02', 2)
@@ -168,7 +169,7 @@ class TestIndicator(unittest.TestCase):
     self.assertEquals(('2001-01-02'), str(indicators[0].date))
   
   def test_calculate_stop(self):
-    indicator = Indicator({'atr_14': Decimal(1)})
+    indicator = Indicator({'atr_exp20': Decimal(1)})
     self.assertEqual(8, indicator.calculate_stop(Decimal(10)))
     
     indicator.atr_stop = 1
