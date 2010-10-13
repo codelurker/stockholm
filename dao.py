@@ -189,9 +189,9 @@ class Quote(Base):
 
   def has_met_stop(self, position):
     if position.is_long:
-      return self.close >= position.get_stop()
-    else:
       return self.close <= position.get_stop()
+    else:
+      return self.close >= position.get_stop()
 
   def is_over_sma50_7(self):
     indicators = self.get_trailing_indicators(7)
@@ -275,6 +275,8 @@ class Currency(Base):
     if type == 'USDSEK':
       return Decimal('6.70654106')
     if type == 'SEKSEK':
+      return Decimal('1')
+    if type == 'USDUSD':
       return Decimal('1')
     if type == 'GBPGBP':
       return Decimal('1')

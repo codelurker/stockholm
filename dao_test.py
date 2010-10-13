@@ -35,10 +35,10 @@ class TestQuote(unittest.TestCase):
     except Quote.NotFound:
       pass
 
-  def test_has_met_stop_long(self):
+  def test_has_met_stop_short(self):
     position = Position({})
     position.get_stop = Mock(return_value = Decimal('10'))
-    position.is_long = True 
+    position.is_long = False 
     q  = Quote({})
 
     q.close = 9
@@ -48,10 +48,10 @@ class TestQuote(unittest.TestCase):
     q.close = 11
     self.assertTrue(q.has_met_stop(position))
 
-  def test_has_met_stop_short(self):
+  def test_has_met_stop_long(self):
     position = Position({})
     position.get_stop = Mock(return_value = Decimal('10'))
-    position.is_long = False 
+    position.is_long = True 
     q  = Quote({})
 
     q.close = 9
