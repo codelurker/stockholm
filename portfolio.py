@@ -19,12 +19,17 @@ def f(arg):
 def ff(tpl):
   return tuple(map(f, tpl))
 
+def separator():
+  print "---------------------------------------------------------------------------------------------------------------------------------------------------------------"
+
 def print_portfolio(id):
   portfolio = Portfolio.get_portfolio(id)
   positions = portfolio.positions
-  print "-------------------------------------------------------------------------------------------------------------------"
-  print "Symbol\tEnter Date\tDate\tValue\tGain\tShares\tRTR\tEnter Price\tClose\tStop\tC Stop\tT Stop\tSell"
-  print "-------------------------------------------------------------------------------------------------------------------"
+  
+  print "\nPortfolio: %s" % portfolio.name
+  separator()
+  print "Symbol\tEnter Date\tDate\tValue\tGain\tShares\tRTR\tEnter Price\tClose\tStop\tATR EXP 20\tT Stop\tShould sell?"
+  separator()
   for p in positions:
     print "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s" % ff(
       (
@@ -37,14 +42,13 @@ def print_portfolio(id):
       p.get_rtr(), 
       p.enter_price,
       p.current_quote.close, 
-      p.stop,
       p.get_stop(),
+      p.get_enter_indicator().atr_exp20,
       p.get_trailing_stop(),
       p.should_sell()
       ))
-  print "-------------------------------------------------------------------------------------------------------------------"
-  print "TOTAL\t\t%s" % (f(portfolio.get_value()))
-  print ""
+  separator()
+  print "TOTAL\t\t\t%s" % (f(portfolio.get_value()))
   
 print_portfolio(1)
 print_portfolio(2)

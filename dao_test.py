@@ -399,5 +399,10 @@ class TestPortfolio(unittest.TestCase):
     positions[0].get_value.assert_called_with('EUR')
     positions[1].get_value.assert_called_with('EUR')
 
+  def test_load(self):
+    portfolio = Portfolio.load(1)
+    self.assertEquals(1, portfolio.id)
+    self.assertEquals("Avanza", portfolio.name)
+
 if __name__ == '__main__':
     unittest.main()

@@ -276,17 +276,26 @@ class Currency(Base):
       return Decimal('6.70654106')
     if type == 'SEKSEK':
       return Decimal('1')
+    if type == 'GBPGBP':
+      return Decimal('1')
     if type == 'GBPSEK':
       return Decimal('10.6558203')
 
 class Portfolio(Base):
+  __cols__ = ['id', 'name', 'currency']
   
   @staticmethod
   def get_portfolio(id):
     positions = Position.get_open_positions(id)
     for position in positions:
       position.current_quote = Quote.get_latest_quote(position.symbol)
-    return Portfolio({'positions': positions, 'currency': 'SEK'})
+    portfolio = Portfolio.load(id)
+    portfolio.positions = positions
+    return portfolio
 
   def get_value(self):
     return sum(map(lambda p: p.get_value(self.currency), self.positions))
+
+  @staticmethod
+  def load(id):
+    return Query.find(Portfolio, 'id= %s', (id))

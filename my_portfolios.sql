@@ -1,3 +1,10 @@
+TRUNCATE TABLE portfolio;
+INSERT INTO portfolio VALUES 
+(1, 'Avanza', 'SEK'),
+(2, 'Avanza IPS', 'SEK'),
+(3, 'XO', 'GBP')
+;
+
 TRUNCATE TABLE position;
 INSERT INTO position VALUES 
 -- ('FUNDS',      'SEK', 1, '2000-01-01',         null,      1,    null,   0,    0, 20258.08,     0, 1),
