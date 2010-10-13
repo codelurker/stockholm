@@ -10,7 +10,6 @@ CREATE TABLE position (
   enter_commission decimal(10, 5) not null, -- In the portfolio currency
   exit_commission decimal(10, 5) default null, -- In the portfolio currency
   shares decimal(10, 5) not null,
-  stop decimal(10, 5) not null,
   portfolio_id integer not null, -- In the portfolio currency
   primary key (portfolio_id, symbol, enter_date)
 );

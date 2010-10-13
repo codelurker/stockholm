@@ -101,7 +101,7 @@ class Query:
 class Position(Base):
   __cols__ = ["symbol", "currency", "currency_rate", "enter_date", "exit_date",
       "enter_price", "exit_price", "enter_commission", "exit_commission",
-      "shares", "stop", "portfolio_id"]
+      "shares", "portfolio_id"]
 
   def __init__(self, args): 
     self.current_quote = None
@@ -118,7 +118,7 @@ class Position(Base):
         acceptable loss in any case
     """
     indicator = self.current_quote.get_indicator()
-    return "" if indicator is None else max(indicator.ll_10, self.stop)
+    return "" if indicator is None else max(indicator.ll_10, self.get_stop())
 
   def get_stop(self):
     if(self.current_quote.is_cash()):
@@ -139,11 +139,11 @@ class Position(Base):
   
   @staticmethod
   def open(symbol, currency, currency_rate, enter_date, enter_price,
-       enter_commission, shares, stop):
+       enter_commission, shares):
     position = Position({'symbol': symbol, 'currency': currency, 
         'currency_rate': currency_rate, 'enter_date': enter_date, 
         'enter_price': enter_price, 'enter_commission': enter_commission,
-        'shares': shares, 'portfolio_id': 1, 'stop': stop})
+        'shares': shares, 'portfolio_id': 1})
     position.save();
     return position
   
@@ -153,7 +153,7 @@ class Position(Base):
         The risk is the amount of money you would loose if you
         sold the position at the stop value
     """
-    return self.shares * (self.enter_price - self.stop) + self.enter_commission
+    return self.shares * (self.enter_price - self.get_stop()) + self.enter_commission
   
   def get_rtr(self):
     """ 
@@ -189,9 +189,9 @@ class Quote(Base):
 
   def has_met_stop(self, position):
     if position.is_long:
-      return self.close >= position.stop
+      return self.close >= position.get_stop()
     else:
-      return self.close <= position.stop
+      return self.close <= position.get_stop()
 
   def is_over_sma50_7(self):
     indicators = self.get_trailing_indicators(7)

@@ -36,7 +36,8 @@ class TestQuote(unittest.TestCase):
       pass
 
   def test_has_met_stop_long(self):
-    position = Position({'stop': 10})
+    position = Position({})
+    position.get_stop = Mock(return_value = Decimal('10'))
     position.is_long = True 
     q  = Quote({})
 
@@ -48,7 +49,8 @@ class TestQuote(unittest.TestCase):
     self.assertTrue(q.has_met_stop(position))
 
   def test_has_met_stop_short(self):
-    position = Position({'stop': 10})
+    position = Position({})
+    position.get_stop = Mock(return_value = Decimal('10'))
     position.is_long = False 
     q  = Quote({})
 
@@ -231,11 +233,10 @@ class TestPosition(unittest.TestCase):
     self.assertEquals(Decimal('99'), position.enter_commission)
     self.assertEquals(Decimal('99'), position.exit_commission)
     self.assertEquals(Decimal('30'), position.shares)
-    self.assertEquals(Decimal('602'), position.stop)
     self.assertEquals(1, position.portfolio_id)
 
   def test_open(self):
-    Position.open('AAPL', 'SEK', 1, '2001-02-03', 200, 99, 2000, 180)
+    Position.open('AAPL', 'SEK', 1, '2001-02-03', 200, 99, 2000)
     position = Position.get_position('AAPL', '2001-02-03')  
     self.assertEquals('AAPL', position.symbol)
     self.assertEquals('2001-02-03', str(position.enter_date))
@@ -247,7 +248,6 @@ class TestPosition(unittest.TestCase):
     self.assertEquals(Decimal('99'), position.enter_commission)
     self.assertEquals(None, position.exit_commission)
     self.assertEquals(Decimal('2000'), position.shares)
-    self.assertEquals(Decimal('180'), position.stop)
 
   @patch("dao.Indicator.get_indicator")
   def test_get_enter_indicator(self, get_indicator):
@@ -299,15 +299,17 @@ class TestPosition(unittest.TestCase):
     self.assertEquals(Decimal('901'), position.get_gain())
     
   def test_get_risk(self):
-    position = Position({'stop': Decimal('8'),
+    position = Position({
         'shares': 1000, 'enter_price': Decimal('10'),
         'enter_commission': Decimal('99') })    
+    position.get_stop = Mock(return_value= Decimal('8'))
     self.assertEquals(2099, position.get_risk())
   
   def test_get_rtr(self):
-    position = Position({'stop': Decimal('8'),
+    position = Position({
         'shares': 1, 'enter_price': Decimal('9'),
         'enter_commission': Decimal('1') })    
+    position.get_stop = Mock(return_value= Decimal('8'))
     position.current_quote = Quote({'close': Decimal('10')})
     self.assertEquals(0, position.get_rtr())
     position.current_quote = Quote({'close': Decimal('12')})
@@ -341,21 +343,24 @@ class TestPosition(unittest.TestCase):
     self.assertTrue(position.should_sell())
   
   def test_get_trailing_stop(self):
-    position = Position({'stop': Decimal('10')})    
+    position = Position({})    
+    position.get_stop = Mock(return_value = Decimal('10'))
     position.current_quote = Quote({})
     indicator = Indicator({'ll_10': Decimal('20')})
     position.current_quote.get_indicator = Mock(return_value = indicator)
     self.assertEquals(Decimal('20'), position.get_trailing_stop())
 
   def test_get_trailing_stop_when_ll_10_lower_than_stop(self):
-    position = Position({'stop': Decimal('30')})    
+    position = Position({})    
+    position.get_stop = Mock(return_value = Decimal('30'))
     position.current_quote = Quote({})
     indicator = Indicator({'ll_10': Decimal('20')})
     position.current_quote.get_indicator = Mock(return_value = indicator)
     self.assertEquals(Decimal('30'), position.get_trailing_stop())
 
   def test_get_trailing_stop_when_no_indicator(self):
-    position = Position({'stop': Decimal('10')})    
+    position = Position({})    
+    position.get_stop = Mock(return_value = Decimal('10'))
     position.current_quote = Quote({})
     indicator = Indicator({'ll_10': Decimal('20')})
     position.current_quote.get_indicator = Mock(return_value = None)
