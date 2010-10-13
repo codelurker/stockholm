@@ -20,7 +20,7 @@ def build_averages(symbol, date):
 
   c.execute("SELECT tr FROM quote WHERE date = %s and symbol =%s", (date, symbol))
   (todays_tr, ) = c.fetchone()
-  
+
   # previous day atr
   c.execute("SELECT atr_exp20 FROM indicator WHERE date < %s and symbol =%s order by date desc limit 1", (date, symbol))
   result = c.fetchone()
@@ -66,9 +66,9 @@ def build_tr(symbol, date):
   prev = quote.previous()
   if prev == None:
     print "quote %s has no prev" % (quote)
-    return
-  tr = max(quote.high, prev.close) - min(quote.low, prev.close)
-  #print "%s %s %s" % (tr, quote, prev)
+    tr = quote.high - quote.low
+  else:
+    tr = max(quote.high, prev.close) - min(quote.low, prev.close)
   dao.Quote.set_tr(symbol, date, tr)
   
 build_indicators()
