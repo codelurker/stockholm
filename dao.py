@@ -1,10 +1,12 @@
-import ystockquote
-import time
 import datetime
+import MySQLdb
+import math
+import re
+import time
+import ystockquote
+
 from datetime import date
 from decimal import Decimal
-import MySQLdb
-import re
 
 class Base:
   def __init__(self, dict_):
@@ -176,6 +178,17 @@ class Position(Base):
     
   def get_gain(self):
     return self.shares * (self.current_quote.close - self.enter_price) - self.enter_commission
+
+  @staticmethod
+  def get_shares(quote, admissible_risk):
+    """
+      Returns the number of stocks that a position
+      should hold so that it does not exceed the
+      admissible risk
+    """
+    indicator = quote.get_indicator()
+    stop = indicator.calculate_stop(quote.close)
+    return Decimal(str(math.floor(admissible_risk/(quote.close - stop))))
 
 class Quote(Base):
   start_date = "2002-04-01"

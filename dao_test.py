@@ -391,6 +391,16 @@ class TestPosition(unittest.TestCase):
     position.current_quote.get_indicator = Mock(return_value = None)
     self.assertEquals('', position.get_trailing_stop())
 
+  @patch("dao.Indicator.calculate_stop")
+  def test_get_shares(self, calculate_stop):
+    quote = Quote({'close': Decimal('100') })
+    quote.get_indicator = Mock(return_value = 
+        Indicator({}))
+    calculate_stop.return_value = Decimal('80')
+    # risk per share is 20
+    shares = Position.get_shares(quote, 2000)  
+    self.assertEquals(100, shares)
+
 class TestPortfolio(unittest.TestCase):
 
   @patch("dao.Quote.get_latest_quote")
