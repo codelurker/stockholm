@@ -12,12 +12,15 @@ def prices(symbol):
   Loads the prices from the start date for the given symbol
   Only new quotes are downloaded.
   """
-  print "Downloading %s" % symbol
   to = date.today().strftime("%Y%m%d")
   c = db.cursor()
   c.execute("SELECT DATE_ADD(max(date), INTERVAL 1 DAY) FROM quote where symbol = %s",
                (symbol))
   (_from, ) = c.fetchone()
+  if _from == date.today():
+    print "Skipping %s" % symbol
+    return
+  print "Downloading %s" % symbol
   if _from is None: 
     _from = start_date
   else:
