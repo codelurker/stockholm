@@ -27,16 +27,19 @@ def prices(symbol):
     _from = _from.strftime("%Y%m%d")
   prices = ystockquote.get_historical_prices(symbol, _from, to)
   headers = prices[0]
-  close = get_idx(headers, 'Close')
-  date_ = get_idx(headers, 'Date')
-  open = get_idx(headers, 'Open')
-  high = get_idx(headers, 'High')
-  low = get_idx(headers, 'Low')
-  quotes = prices[1:]
-  for l in quotes:
-    #print "%s %s" % (l[date_], l[close])
-    insert(symbol, l[date_], l[close], l[high], l[low], l[open])
-  print "Inserted %s new quotes for %s" % (len(quotes), symbol)
+  try:
+    close = get_idx(headers, 'Close')
+    date_ = get_idx(headers, 'Date')
+    open = get_idx(headers, 'Open')
+    high = get_idx(headers, 'High')
+    low = get_idx(headers, 'Low')
+    quotes = prices[1:]
+    for l in quotes:
+      #print "%s %s" % (l[date_], l[close])
+      insert(symbol, l[date_], l[close], l[high], l[low], l[open])
+    print "Inserted %s new quotes for %s" % (len(quotes), symbol)
+  except:
+    print "Could not download %s" % symbol
 
 def get_idx(headers, query):
     for index, item in enumerate(headers):
@@ -44,7 +47,7 @@ def get_idx(headers, query):
         return index
     print("Could not find requested header [%s]" % query)
     print("Available ones are %s" % headers)
-    exit()
+    raise "Eror ind downloading quote"
 
 def insert(symbol, date, close, high, low, open):
   c = db.cursor()
