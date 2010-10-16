@@ -6,12 +6,13 @@ import MySQLdb
 
 db=MySQLdb.connect(host="localhost", user="robcos",
                       passwd="robcos", db="stocks")
-def prices(symbol, start_date):
+start_date='20100101'
+def prices(symbol):
   """
   Loads the prices from the start date for the given symbol
   Only new quotes are downloaded.
   """
- 
+  print "Downloading %s" % symbol
   to = date.today().strftime("%Y%m%d")
   c = db.cursor()
   c.execute("SELECT DATE_ADD(max(date), INTERVAL 1 DAY) FROM quote where symbol = %s",
@@ -46,18 +47,3 @@ def insert(symbol, date, close, high, low, open):
   c = db.cursor()
   c.execute("INSERT INTO quote (date, symbol, close, high, low, open) VALUES (%s, %s, %s, %s, %s, %s)",
                (date, symbol, close, high, low, open))
-start_date='20100101'
-prices('AAPL', start_date)
-prices('AGLD.L', start_date)
-prices('LUPE.ST', start_date)
-prices('GOOG', start_date)
-prices('AXIS.ST', start_date)
-prices('MIC-SDB.ST', start_date)
-prices('BOL.ST', start_date)
-prices('ERIC-A.ST', start_date)
-prices('HMB.ST', start_date)
-prices('TLSN.ST', start_date)
-prices('TEL2-A.ST', start_date)
-prices('RIO.L', start_date)
-prices('SWEC-B.ST', start_date)
-prices('AZN.ST', start_date)
