@@ -21,7 +21,7 @@ INSERT INTO position VALUES
 -- ( 'FUNDS',      'SEK', 1, '2000-01-01',         null,      1,    null,   0,    0,  2508.50, 2),
 -- ('CASH',       'SEK', 1, '2000-01-01',         null,      1,    null,   0,    0, 17747.97, 2),
 -- ('HOLM-B.ST',  'SEK', 1, '2010-09-09',         null, 217.00,    null,  99, null,       25, 2),
-('HMB.ST',     'SEK', 1, '2010-09-02',         null, 247.10,    null,  99, null,      40,  2),
+('HMB.ST',     'SEK', 1, '2010-09-02', '2010-10-11', 247.10,    238,   99,   99,      40,  2),
 ('LUPE.ST',    'SEK', 1, '2010-07-23',         null,     40,    null,  99, null,      130, 2),
 ('TLSN.ST',    'SEK', 1, '2010-07-23',         null,  53.65,    null,  99, null,      100, 2),
 ('TEL2-A.ST',  'SEK', 1, '2010-07-19',         null,  129.0,    null,  99, null,       40, 2)
