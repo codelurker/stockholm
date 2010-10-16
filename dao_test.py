@@ -148,6 +148,31 @@ class TestQuote(unittest.TestCase):
     self.assertEquals(Decimal('120.1'), quote.low)
     self.assertEquals(Decimal('130.1'), quote.open)
 
+  def test_is_above_sma20(self):
+    quote = Quote({'close': Decimal('30')})
+    quote.get_indicator = Mock(return_value = 
+        Indicator({'sma_20': Decimal('20')}))
+    self.assertTrue(quote.is_above_sma20())
+    quote.get_indicator = Mock(return_value = 
+        Indicator({'sma_20': Decimal('40')}))
+    self.assertFalse(quote.is_above_sma20())
+
+  def test_is_above_sma50(self):
+    quote = Quote({'close': Decimal('30')})
+    quote.get_indicator = Mock(return_value = 
+        Indicator({'sma_50': Decimal('20')}))
+    self.assertTrue(quote.is_above_sma50())
+    quote.get_indicator = Mock(return_value = 
+        Indicator({'sma_50': Decimal('40')}))
+    self.assertFalse(quote.is_above_sma50())
+
+  def test_get_latest_quotes(self):
+    quotes = Quote.get_latest_quotes()
+    self.assertEquals('LUPE', quotes[0].symbol)
+    self.assertEquals('2001-01-01', str(quotes[0].date))
+    self.assertEquals('AAPL', quotes[1].symbol)
+    self.assertEquals('2001-01-03', str(quotes[1].date))
+
 class TestIndicator(unittest.TestCase):
   
   def test_get_indicator(self):

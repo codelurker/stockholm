@@ -39,8 +39,9 @@ class Query:
     return self
 
   def keys_(self):
-    keys = re.split(' *, *', re.search('SELECT (.*) FROM', self.query, flags=re.IGNORECASE).group(1))
+    keys = re.split(' *, *', re.search('SELECT (.*?) FROM', self.query, flags=re.IGNORECASE).group(1))
     for i, key in enumerate(keys):
+      key = re.split(' as ', key)[-1]
       keys[i] = key.strip()
     return keys
 
@@ -193,12 +194,20 @@ class Quote(Base):
     else:
       return self.close >= position.get_stop()
 
-  def is_over_sma50_7(self):
+  def is_above_sma50_7(self):
     indicators = self.get_trailing_indicators(7)
     for i in indicators:
       if self.close < i.sma_50:
         return False
     return True
+
+  def is_above_sma50(self):
+    i = self.get_indicator()
+    return self.close > i.sma_50
+  
+  def is_above_sma20(self):
+    i = self.get_indicator()
+    return self.close > i.sma_20
  
   def is_cash(self):
     return self.symbol == 'CASH' or self.symbol == 'FUNDS'
@@ -210,6 +219,19 @@ class Quote(Base):
   @staticmethod
   def get_quotes(symbol):
     c = Query("SELECT symbol, date, open, high, low, close, tr from quote where symbol = %s and date > %s order by date asc", (symbol, Quote.start_date))
+    return c.fillall(Quote)
+  
+  @staticmethod
+  def get_latest_quotes():
+    """ 
+        Returns the latest quote for each
+        symbol stored in the database.
+    """
+    c = Query("SELECT"
+      " quote.symbol as symbol, quote.date as date, open, high, low, close, tr"
+      " FROM quote, (SELECT symbol, max(date) as date from quote " 
+      " group by symbol order by date asc) as maxs where "
+      " quote.symbol = maxs.symbol and quote.date = maxs.date", ())
     return c.fillall(Quote)
 
   @staticmethod
