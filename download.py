@@ -45,8 +45,8 @@ def get_idx(headers, query):
     for index, item in enumerate(headers):
       if (item == query):
         return index
-    print("Could not find requested header [%s]" % query)
-    print("Available ones are %s" % headers)
+    #print("Could not find requested header [%s]" % query)
+    #print("Available ones are %s" % headers)
     raise "Eror ind downloading quote"
 
 def insert(symbol, date, close, high, low, open):
