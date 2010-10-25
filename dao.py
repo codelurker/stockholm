@@ -115,7 +115,7 @@ class Position(Base):
  
   def get_trailing_stop(self):
     """ 
-        Returns the lowest low of the past 20 days.
+        Returns the lowest low of the past 10 days.
         If the value is lower than the initial stop,
         it returns the stop as that is the maximum
         acceptable loss in any case
