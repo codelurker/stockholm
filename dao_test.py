@@ -7,12 +7,7 @@ from dao import *
 
 class TestQuote(unittest.TestCase):
 
-  def test_get_latest_quote(self):
-    quote = Quote.get_latest_quote('AAPL')
-    self.assertEquals('AAPL', quote.symbol)
-    self.assertEquals(('2001-01-03'), str(quote.date))
-
-  def test_get_latest_quote(self):
+  def test_get_latest_quote_for_cash(self):
     quote = Quote.get_latest_quote('CASH')
     self.assertEquals('CASH', quote.symbol)
     self.assertEquals(Decimal('1'), quote.close)
@@ -20,7 +15,7 @@ class TestQuote(unittest.TestCase):
     self.assertEquals(Decimal('1'), quote.low)
     self.assertEquals(Decimal('1'), quote.open)
 
-  def test_get_latest_quote(self):
+  def test_get_latest_quote_for_funds(self):
     quote = Quote.get_latest_quote('FUNDS')
     self.assertEquals('FUNDS', quote.symbol)
     self.assertEquals(Decimal('1'), quote.close)
@@ -171,7 +166,12 @@ class TestQuote(unittest.TestCase):
     self.assertEquals('LUPE', quotes[0].symbol)
     self.assertEquals('2001-01-01', str(quotes[0].date))
     self.assertEquals('AAPL', quotes[1].symbol)
-    self.assertEquals('2001-01-03', str(quotes[1].date))
+    self.assertEquals('2010-07-06', str(quotes[1].date))
+
+  def test_get_latest_quote(self):
+    quote = Quote.get_latest_quote('AAPL')
+    self.assertEquals('AAPL', quote.symbol)
+    self.assertEquals(('2010-07-06'), str(quote.date))
 
 class TestIndicator(unittest.TestCase):
   
@@ -245,6 +245,11 @@ class TestQuery(unittest.TestCase):
     self.assertTrue(4, dummies[1].b)
 
 class TestPosition(unittest.TestCase):
+
+  def test_get_max(self):
+    position = Position.get_position('AAPL', '2010-07-06')
+    self.assertEquals(Decimal('150.3'), position.get_max())
+
   def test_get_position(self):
     position = Position.get_position('MIC-SDB.ST', '2010-09-09')
     self.assertTrue(isinstance(position, Position))
@@ -390,6 +395,16 @@ class TestPosition(unittest.TestCase):
     indicator = Indicator({'ll_10': Decimal('20')})
     position.current_quote.get_indicator = Mock(return_value = None)
     self.assertEquals('', position.get_trailing_stop())
+
+  def test_get_atr_trailing_stop(self):
+    position = Position({})    
+    position.get_max = Mock(return_value = Decimal('10'))
+    quote = Quote({'symbol':'AAPL'})
+    position.current_quote = quote
+    quote.get_indicator = Mock(return_value = 
+        Indicator({'atr_exp20': Decimal('1')}))
+
+    self.assertEquals(8, position.get_atr_trailing_stop())
 
   @patch("dao.Indicator.calculate_stop")
   def test_get_shares(self, calculate_stop):

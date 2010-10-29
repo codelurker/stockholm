@@ -35,9 +35,9 @@ class Query:
   def execute(self):
     self.cursor = self.db.cursor()
     self.cursor.execute(self.query, self.params)
-    #print "######## DEBUG ########\n" if debug
+    #print "######## DEBUG ########\n"
     #print self.query % self.params
-    #print "\n######## DEBUG ########" if debug
+    #print "\n######## DEBUG ########"
     return self
 
   def keys_(self):
@@ -123,6 +123,15 @@ class Position(Base):
     indicator = self.current_quote.get_indicator()
     return "" if indicator is None else max(indicator.ll_10, self.get_stop())
 
+  def get_atr_trailing_stop(self):
+    """
+        Returns the max close value minus
+        twice the atr value
+    """
+    indicator = self.current_quote.get_indicator()
+    return "" if indicator is None else indicator.calculate_stop(self.get_max())
+
+ 
   def get_stop(self):
     if(self.current_quote.is_cash()):
       return ""
@@ -131,6 +140,11 @@ class Position(Base):
   def get_enter_indicator(self):
     indicator = Indicator.get_indicator(self.symbol, self.enter_date)
     return indicator
+  
+  def get_max(self):
+    (max,) = Query('SELECT MAX(close) from quote where symbol = %s and date >= %s',
+       (self.symbol, self.enter_date)).execute().fetchone_()
+    return max
  
   @staticmethod
   def get_position(symbol, date):
