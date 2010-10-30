@@ -94,17 +94,26 @@ def has_position(quote):
  
 class TurtleHandlers():
   
-  def handle_entry(quote):
+  def handle_entry(self, quote):
+    enter = self.is_20_breakout(quote)
+    enter = enter and self.is_prev_20_breakout_looser(quote)
+    enter = enter or self.is_50_breakout(quote)
+    return enter
+
+  def handle_stop(self, quote):
     pass
 
-  def handle_stop(quote):
+  def handle_exit(self, quote):
     pass
 
-  def handle_exit(quote):
-    pass
-
-  def handle_units(quote):
+  def handle_units(self, quote):
     print "handle_units"
+
+  def is_20_breakout(self, quote):
+    pass
+  
+  def is_50_breakout(self, quote):
+    pass
 
 def handle_20_breakout(quote):
   pass

@@ -6,6 +6,46 @@ from dao import *
 from decimal import Decimal
 from turtle import *
 
+class TestTurtleHandlers(unittest.TestCase):
+
+  def test_handle_entry_close_below_20_day_high(self):
+    handlers = TurtleHandlers()
+    
+    quote = Quote({'close': 80})
+    indicator = Indicator({'hh_20': 100})
+    quote.get_indicator = Mock(return_value = indicator)
+     
+    self.assertFalse(handlers.handle_entry(quote))
+
+  def test_handle_entry_breakout_20_and_prev_breakout_looser_does_open_position(self):
+    handlers = TurtleHandlers()
+    
+    quote = Quote({})
+    handlers.is_20_breakout = Mock(return_value = True)
+    handlers.is_prev_20_breakout_looser = Mock(return_value = True)
+
+    self.assertTrue(handlers.handle_entry(quote))
+   
+  def test_handle_entry_breakout_20_and_not_prev_breakout_looser_does_not_open_position(self):
+    handlers = TurtleHandlers()
+    
+    quote = Quote({})
+    handlers.is_20_breakout = Mock(return_value = True)
+    handlers.is_prev_20_breakout_looser = Mock(return_value = False)
+
+    self.assertFalse(handlers.handle_entry(quote))
+ 
+  def test_handle_entry_breakout_20_and_not_prev_breakout_looser_and_breakout_50_does_open_position(self):
+    handlers = TurtleHandlers()
+    
+    quote = Quote({})
+    handlers.is_20_breakout = Mock(return_value = True)
+    handlers.is_prev_20_breakout_looser = Mock(return_value = False)
+    handlers.is_50_breakout = Mock(return_value = True)
+
+    self.assertTrue(handlers.handle_entry(quote))
+    
+
 class TestTurtle(unittest.TestCase):
 
   @patch('turtle.TurtleHandlers.handle_units')
