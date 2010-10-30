@@ -82,6 +82,12 @@ class TestQuote(unittest.TestCase):
     quote = Quote.get_quote('AAPL', '2001-01-02')
     self.assertQuote(quote.previous())
 
+  def test_next(self):
+    quote = Quote.get_quote('AAPL', '2001-01-02')
+    next = quote.next()
+    self.assertEquals(quote.symbol, next.symbol)
+    self.assertEquals(datetime.date(2001, 1, 3), next.date)
+
   def test_get_indicator(self):
     quote = Quote({'symbol':'AAPL', 'date':'2001-01-02'})
     indicator = Indicator({})

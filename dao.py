@@ -283,6 +283,10 @@ class Quote(Base):
     c = Query("SELECT symbol, date, open, high, low, close from quote where symbol = %s and date < %s order by date desc limit 1", (self.symbol, self.date))
     return c.fillone(Quote)
   
+  def next(self):
+    c = Query("SELECT symbol, date, open, high, low, close from quote where symbol = %s and date > %s order by date asc limit 1", (self.symbol, self.date))
+    return c.fillone(Quote)
+  
   def get_trailing_indicators(self, days):
     return Indicator.get_trailing_indicators(self.symbol, self.date, days)
 
