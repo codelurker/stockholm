@@ -1,5 +1,4 @@
 import datetime
-import MySQLdb
 import math
 import re
 import time
@@ -7,6 +6,8 @@ import ystockquote
 
 from datetime import date
 from decimal import Decimal
+
+from connection import db
 
 class Base:
   def __init__(self, dict_):
@@ -22,8 +23,6 @@ class Base:
     Query.save(self)
  
 class Query:
-  db=MySQLdb.connect(host="localhost", user="robcos",
-                      passwd="robcos", db="stocks")
   def __init__(self, query, params):
     self.query = query
     self.params = params
@@ -33,7 +32,7 @@ class Query:
     return ", ".join(cols)
 
   def execute(self):
-    self.cursor = self.db.cursor()
+    self.cursor = db.cursor()
     self.cursor.execute(self.query, self.params)
     #print "######## DEBUG ########\n"
     #print self.query % self.params
@@ -84,7 +83,7 @@ class Query:
       value_places.append("%s")
       values.append(object.__dict__.get(k))
     insert = "INSERT INTO %s (%s) values (%s)" % (table, cols, ", ".join(value_places))
-    cursor = Query.db.cursor()
+    cursor = db.cursor()
     cursor.execute(insert, values)
 
   @staticmethod 

@@ -2,10 +2,8 @@ import ystockquote
 import time
 import datetime
 from datetime import date
-import MySQLdb
+from connection import db
 
-db=MySQLdb.connect(host="localhost", user="robcos",
-                      passwd="robcos", db="stocks")
 start_date='20100101'
 def prices(symbol):
   """

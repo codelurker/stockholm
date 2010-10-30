@@ -3,11 +3,9 @@ import download
 import time
 from datetime import datetime
 from _mysql_exceptions import IntegrityError
-import MySQLdb
 import indicators
 
-db=MySQLdb.connect(host="localhost", user="robcos",
-                      passwd="robcos", db="stocks")
+from connection import db
 
 def prices(symbol):
   """

@@ -4,12 +4,9 @@ import datetime
 import math
 from datetime import date
 from decimal import Decimal
-import MySQLdb
 from dao import Position
 from dao import Quote
-db=MySQLdb.connect(host="localhost", user="robcos",
-                      passwd="robcos", db="stocks")
-
+from connection import db
 
  #print("[%s] %s mavg20=%s mavg50=%s" % (symbol, date, days, sma_50))
 

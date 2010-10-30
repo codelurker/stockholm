@@ -2,11 +2,9 @@ import ystockquote
 import time
 import datetime
 from datetime import date
-import MySQLdb
 import dao
 
-db=MySQLdb.connect(host="localhost", user="robcos",
-                      passwd="robcos", db="stocks")
+from connection import db
 
 def build_averages(symbol, date):
   c = db.cursor()
