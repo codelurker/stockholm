@@ -9,7 +9,7 @@ import indicators
 db=MySQLdb.connect(host="localhost", user="robcos",
                       passwd="robcos", db="stocks")
 
-def download_last_quote(symbol):
+def prices(symbol):
   """
      Downloads and stores the latest quote for the given symbol
   """
@@ -24,11 +24,13 @@ def download_last_quote(symbol):
       all['open'])
   except IntegrityError:
     print "Quote for %s already stored" % symbol
+  except ValueError:
+    print "Quote for %s could not be downloaded" % symbol
   
-c = db.cursor()
-c.execute("SELECT distinct symbol FROM position")
-rows = c.fetchall()
-for (symbol,) in rows:
-  download_last_quote(symbol)
-
-indicators.build_indicators()
+if __name__ == '__main__':
+  c = db.cursor()
+  c.execute("SELECT distinct symbol FROM position")
+  rows = c.fetchall()
+  for (symbol,) in rows:
+    prices(symbol)
+  indicators.build_indicators()
