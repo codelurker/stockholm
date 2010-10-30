@@ -278,7 +278,7 @@ class TestPosition(unittest.TestCase):
     self.assertEquals(1, position.portfolio_id)
 
   def test_open(self):
-    Position.open('AAPL', 'SEK', 1, '2001-02-03', 200, 99, 2000)
+    Position.open('AAPL', 'SEK', 1, '2001-02-03', 200, 99, 2000).save()
     position = Position.get_position('AAPL', '2001-02-03')  
     self.assertEquals('AAPL', position.symbol)
     self.assertEquals('2001-02-03', str(position.enter_date))

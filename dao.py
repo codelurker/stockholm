@@ -160,7 +160,6 @@ class Position(Base):
         'currency_rate': currency_rate, 'enter_date': enter_date, 
         'enter_price': enter_price, 'enter_commission': enter_commission,
         'shares': shares, 'portfolio_id': 1})
-    position.save();
     return position
   
   def get_risk(self):
