@@ -75,31 +75,36 @@ def run():
     handle_quote(quote)
  
 def handle_quote(quote):
+  handlers = TurtleHandlers()
   if (has_position(quote)):
-    handle_stop(quote) or handle_exit(quote) or handle_units(quote)
+    handlers.handle_stop(quote) or (
+        handlers.handle_exit(quote)) or (
+        handlers.handle_units(quote))
   else:
     # Check entries
-    handle_entry(quote)
+    handlers.handle_entry(quote)
      
 # open_position(quote)
   
 # if (handle_20_breakout(quote) and handle_prev_20_breakout(quote))
 #  or handle_50_breakout(quote):
-    
-def handle_entry(quote):
-  pass
-
+  
 def has_position(quote):
   return True
+ 
+class TurtleHandlers():
+  
+  def handle_entry(quote):
+    pass
 
-def handle_stop(quote):
-  pass
+  def handle_stop(quote):
+    pass
 
-def handle_exit(quote):
-  pass
+  def handle_exit(quote):
+    pass
 
-def handle_units(quote):
-  print "handle_units"
+  def handle_units(quote):
+    print "handle_units"
 
 def handle_20_breakout(quote):
   pass

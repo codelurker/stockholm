@@ -8,9 +8,9 @@ from turtle import *
 
 class TestTurtle(unittest.TestCase):
 
-  @patch('turtle.handle_units')
-  @patch('turtle.handle_exit')
-  @patch('turtle.handle_stop')
+  @patch('turtle.TurtleHandlers.handle_units')
+  @patch('turtle.TurtleHandlers.handle_exit')
+  @patch('turtle.TurtleHandlers.handle_stop')
   @patch('turtle.has_position')
   def test_handle_quote_handle_stop(self,
       has_position, 
@@ -29,9 +29,9 @@ class TestTurtle(unittest.TestCase):
     self.assertFalse(handle_units.called)
  
 
-  @patch('turtle.handle_units')
-  @patch('turtle.handle_exit')
-  @patch('turtle.handle_stop')
+  @patch('turtle.TurtleHandlers.handle_units')
+  @patch('turtle.TurtleHandlers.handle_exit')
+  @patch('turtle.TurtleHandlers.handle_stop')
   @patch('turtle.has_position')
   def test_handle_quote_handle_exit(self, 
       has_position, 
@@ -50,9 +50,9 @@ class TestTurtle(unittest.TestCase):
     self.assertFalse(handle_units.called)
 
 
-  @patch('turtle.handle_units')
-  @patch('turtle.handle_exit')
-  @patch('turtle.handle_stop')
+  @patch('turtle.TurtleHandlers.handle_units')
+  @patch('turtle.TurtleHandlers.handle_exit')
+  @patch('turtle.TurtleHandlers.handle_stop')
   @patch('turtle.has_position')
   def test_handle_quote_handle_units(self, 
       has_position, 
@@ -71,7 +71,7 @@ class TestTurtle(unittest.TestCase):
     handle_exit.assert_called_with(quote)
     handle_units.assert_called_with(quote)
 
-  @patch('turtle.handle_entry')
+  @patch('turtle.TurtleHandlers.handle_entry')
   @patch('turtle.has_position')
   def test_handle_quote_handle_units(self, 
       has_position, 
