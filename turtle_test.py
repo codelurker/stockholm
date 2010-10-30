@@ -8,14 +8,15 @@ from turtle import *
 
 class TestTurtleHandlers(unittest.TestCase):
 
-  def test_handle_entry_close_below_20_day_high(self):
+  def test_handle_entry_not_breakout_20_does_not_open_position(self):
     handlers = TurtleHandlers()
     
-    quote = Quote({'close': 80})
-    indicator = Indicator({'hh_20': 100})
-    quote.get_indicator = Mock(return_value = indicator)
+    quote = Quote({})
+    handlers.is_20_breakout = Mock(return_value = False)
+    handlers.open_position = Mock()
      
     self.assertFalse(handlers.handle_entry(quote))
+    self.assertFalse(handlers.open_position.called)
 
   def test_handle_entry_breakout_20_and_prev_breakout_looser_does_open_position(self):
     handlers = TurtleHandlers()
@@ -23,8 +24,10 @@ class TestTurtleHandlers(unittest.TestCase):
     quote = Quote({})
     handlers.is_20_breakout = Mock(return_value = True)
     handlers.is_prev_20_breakout_looser = Mock(return_value = True)
+    handlers.open_position = Mock()
 
     self.assertTrue(handlers.handle_entry(quote))
+    handlers.open_position.assert_called_with(quote)
    
   def test_handle_entry_breakout_20_and_not_prev_breakout_looser_does_not_open_position(self):
     handlers = TurtleHandlers()
@@ -32,8 +35,11 @@ class TestTurtleHandlers(unittest.TestCase):
     quote = Quote({})
     handlers.is_20_breakout = Mock(return_value = True)
     handlers.is_prev_20_breakout_looser = Mock(return_value = False)
+    handlers.is_50_breakout = Mock(return_value = False)
+    handlers.open_position = Mock()
 
     self.assertFalse(handlers.handle_entry(quote))
+    self.assertFalse(handlers.open_position.called)
  
   def test_handle_entry_breakout_20_and_not_prev_breakout_looser_and_breakout_50_does_open_position(self):
     handlers = TurtleHandlers()
@@ -42,10 +48,11 @@ class TestTurtleHandlers(unittest.TestCase):
     handlers.is_20_breakout = Mock(return_value = True)
     handlers.is_prev_20_breakout_looser = Mock(return_value = False)
     handlers.is_50_breakout = Mock(return_value = True)
+    handlers.open_position = Mock()
 
     self.assertTrue(handlers.handle_entry(quote))
+    handlers.open_position.assert_called_with(quote)
     
-
 class TestTurtle(unittest.TestCase):
 
   @patch('turtle.TurtleHandlers.handle_units')

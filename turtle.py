@@ -96,9 +96,13 @@ class TurtleHandlers():
   
   def handle_entry(self, quote):
     enter = self.is_20_breakout(quote)
-    enter = enter and self.is_prev_20_breakout_looser(quote)
-    enter = enter or self.is_50_breakout(quote)
+    enter = enter and (self.is_prev_20_breakout_looser(quote) or
+        self.is_50_breakout(quote))
+    enter and self.open_position(quote)
     return enter
+
+  def open_position(self, quote):
+    pass
 
   def handle_stop(self, quote):
     pass
@@ -110,10 +114,10 @@ class TurtleHandlers():
     print "handle_units"
 
   def is_20_breakout(self, quote):
-    pass
+    return quote.is_above_20_day_high()
   
   def is_50_breakout(self, quote):
-    pass
+    return quote.is_above_50_day_high()
 
 def handle_20_breakout(quote):
   pass
