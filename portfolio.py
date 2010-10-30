@@ -28,10 +28,10 @@ def print_portfolio(id):
   
   print "\nPortfolio: %s" % portfolio.name
   separator()
-  print "Symbol\tEnter Date\tDate\tValue\tGain\tShares\tRTR\tEnter Price\tClose\tStop\tATR EXP 20\tT Stop\tShould sell?"
+  print "Symbol\tEnter Date\tDate\tValue\tGain\tShares\tRTR\tEnter Price\tClose\tStop\tATR EXP 20\tT Stop\tATR Stop\tShould sell?"
   separator()
   for p in positions:
-    print "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s" % ff(
+    print "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s" % ff(
       (
       p.symbol, 
       p.enter_date,
@@ -39,12 +39,14 @@ def print_portfolio(id):
       p.get_value(portfolio.currency), 
       p.get_gain(), 
       p.shares, 
+      #p.get_max(), 
       p.get_rtr(), 
       p.enter_price,
       p.current_quote.close, 
       p.get_stop(),
       p.get_enter_indicator().atr_exp20,
       p.get_trailing_stop(),
+      p.get_atr_trailing_stop(),
       p.should_sell()
       ))
   separator()

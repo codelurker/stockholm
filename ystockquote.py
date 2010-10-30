@@ -27,7 +27,7 @@ sample usage:
 
 def __request(symbol, stat):
     url = 'http://finance.yahoo.com/d/quotes.csv?s=%s&f=%s' % (symbol, stat)
-    return urllib.urlopen(url).read().strip().strip('"')
+    return urllib.urlopen(url).read().strip()
 
 
 def get_all(symbol):
@@ -36,7 +36,7 @@ def get_all(symbol):
     
     Returns a dictionary.
     """
-    values = __request(symbol, 'l1c1va2xj1b4j4dyekjm3m4rr5p5p6s7').split(',')
+    values = __request(symbol, 'l1c1va2xj1b4j4dyekjm3m4rr5p5p6s7ohgd1').split(',')
     data = {}
     data['price'] = values[0]
     data['change'] = values[1]
@@ -58,6 +58,10 @@ def get_all(symbol):
     data['price_sales_ratio'] = values[17]
     data['price_book_ratio'] = values[18]
     data['short_ratio'] = values[19]
+    data['open'] = values[20]
+    data['high'] = values[21]
+    data['low'] = values[22]
+    data['date'] = values[23]
     return data
     
     

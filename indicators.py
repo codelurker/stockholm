@@ -71,4 +71,5 @@ def build_tr(symbol, date):
     tr = max(quote.high, prev.close) - min(quote.low, prev.close)
   dao.Quote.set_tr(symbol, date, tr)
   
-build_indicators()
+if __name__ == '__main__':
+  build_indicators()
