@@ -57,26 +57,20 @@ Notes
   
 """
 
-
-
-
-total = 100000
-currency = 'USD'
-#stocks = 0
 #symbol = 'LUPE.ST'
-symbol = 'AAPL'
-symbol = 'RIO.L'
+#symbol = 'AAPL'
+#symbol = 'RIO.L'
 symbol = 'SYSR.ST'
 
 def run():
+  handlers = TurtleHandlers()
   for quote in Quote.get_quotes(symbol):
     #print "\nSimulating %s" % quote
     #print "%s" % quote.get_indicator()
-    handle_quote(quote)
+    handle_quote(quote, handlers)
  
-def handle_quote(quote):
-  handlers = TurtleHandlers()
-  if (has_position(quote)):
+def handle_quote(quote, handlers):
+  if (handlers.has_position(quote)):
     handlers.handle_stop(quote) or (
         handlers.handle_exit(quote)) or (
         handlers.handle_units(quote))
@@ -84,25 +78,39 @@ def handle_quote(quote):
     # Check entries
     handlers.handle_entry(quote)
      
-# open_position(quote)
-  
-# if (handle_20_breakout(quote) and handle_prev_20_breakout(quote))
-#  or handle_50_breakout(quote):
-  
-def has_position(quote):
-  return True
- 
 class TurtleHandlers():
+  position = None
+  currency = 'SEK'
+  currency_rate = 1
+  commission = Decimal('99')
+  total = Decimal('1')
   
   def handle_entry(self, quote):
     enter = self.is_20_breakout(quote)
+    #if enter: print "breakout %s" % quote
     enter = enter and (self.is_prev_20_breakout_looser(quote) or
         self.is_50_breakout(quote))
     enter and self.open_position(quote)
     return enter
 
+  def get_risk(self):
+    return Decimal(self.total/100)
+
   def open_position(self, quote):
-    pass
+
+    shares = Position.get_shares(quote, self.get_risk())
+    next_quote = quote.next()
+    self.position = Position.open(
+        quote.symbol, 
+        self.currency, 
+        self.currency_rate, 
+        next_quote.date,
+        next_quote.open,
+        self.commission,
+        shares)
+
+  def has_position(self, quote):
+    return self.position != None
 
   def handle_stop(self, quote):
     pass
@@ -117,7 +125,14 @@ class TurtleHandlers():
     return quote.is_above_20_day_high()
   
   def is_50_breakout(self, quote):
-    return quote.is_above_50_day_high()
+    return False and quote.is_above_50_day_high()
+
+  def is_prev_20_breakout_looser(self, quote):
+    while True:
+      quote = quote.previous()
+      if quote.is_above_20_day_high():
+        break
+    print quote
 
 def handle_20_breakout(quote):
   pass

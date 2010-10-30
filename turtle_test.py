@@ -52,13 +52,43 @@ class TestTurtleHandlers(unittest.TestCase):
 
     self.assertTrue(handlers.handle_entry(quote))
     handlers.open_position.assert_called_with(quote)
+
+  @patch('dao.Position.open')
+  @patch('dao.Position.get_shares')
+  def test_open_position(self, get_shares, open):
+    handlers = TurtleHandlers()
+    handlers.commision = 99
+    handlers.currency = 'USD'
+    handlers.currency_rate = 1.2
+    handlers.account = 100000
+    self.assertFalse(handlers.position)
+
+    quote = Quote({'symbol': 'AAPL'})
+    next_quote = Quote({'open': 100, 'date': '10/01/10'})
+    quote.next = Mock(return_value = next_quote)
+    position = Position({});
+    open.return_value = position
+    get_shares.return_value = 1000
+    handlers.get_risk = Mock(return_value = 1000)
+
+    handlers.open_position(quote)
+
+    self.assertTrue(handlers.position)
+    open.assert_called_with('AAPL', 'USD', 1.2, '10/01/10', 100, 99, 1000)
+    get_shares.assert_called_with(quote, 1000)
+
+  def test_get_risk(self):
+    handlers = TurtleHandlers()
+    handlers.total = Decimal('100000')
+    
+    self.assertEquals(Decimal('1000'), handlers.get_risk())
     
 class TestTurtle(unittest.TestCase):
 
   @patch('turtle.TurtleHandlers.handle_units')
   @patch('turtle.TurtleHandlers.handle_exit')
   @patch('turtle.TurtleHandlers.handle_stop')
-  @patch('turtle.has_position')
+  @patch('turtle.TurtleHandlers.has_position')
   def test_handle_quote_handle_stop(self,
       has_position, 
       handle_stop, 
@@ -69,7 +99,7 @@ class TestTurtle(unittest.TestCase):
     handle_stop.return_value = True
     quote = Quote({})
 
-    handle_quote(quote)
+    handle_quote(quote, TurtleHandlers())
 
     handle_stop.assert_called_with(quote)
     self.assertFalse(handle_exit.called)
@@ -79,7 +109,7 @@ class TestTurtle(unittest.TestCase):
   @patch('turtle.TurtleHandlers.handle_units')
   @patch('turtle.TurtleHandlers.handle_exit')
   @patch('turtle.TurtleHandlers.handle_stop')
-  @patch('turtle.has_position')
+  @patch('turtle.TurtleHandlers.has_position')
   def test_handle_quote_handle_exit(self, 
       has_position, 
       handle_stop, 
@@ -91,7 +121,7 @@ class TestTurtle(unittest.TestCase):
     handle_exit.return_value = True
     quote = Quote({})
 
-    handle_quote(quote)
+    handle_quote(quote, TurtleHandlers())
 
     handle_stop.assert_called_with(quote)
     self.assertFalse(handle_units.called)
@@ -100,7 +130,7 @@ class TestTurtle(unittest.TestCase):
   @patch('turtle.TurtleHandlers.handle_units')
   @patch('turtle.TurtleHandlers.handle_exit')
   @patch('turtle.TurtleHandlers.handle_stop')
-  @patch('turtle.has_position')
+  @patch('turtle.TurtleHandlers.has_position')
   def test_handle_quote_handle_units(self, 
       has_position, 
       handle_stop, 
@@ -112,14 +142,14 @@ class TestTurtle(unittest.TestCase):
     handle_exit.return_value = False
     quote = Quote({})
 
-    handle_quote(quote)
+    handle_quote(quote, TurtleHandlers())
 
     handle_stop.assert_called_with(quote)
     handle_exit.assert_called_with(quote)
     handle_units.assert_called_with(quote)
 
   @patch('turtle.TurtleHandlers.handle_entry')
-  @patch('turtle.has_position')
+  @patch('turtle.TurtleHandlers.has_position')
   def test_handle_quote_handle_units(self, 
       has_position, 
       handle_entry):
@@ -127,7 +157,7 @@ class TestTurtle(unittest.TestCase):
     has_position.return_value = False
     quote = Quote({})
 
-    handle_quote(quote)
+    handle_quote(quote, TurtleHandlers())
 
     handle_entry.assert_called_with(quote)
     
