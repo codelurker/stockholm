@@ -122,6 +122,18 @@ class TestQuote(unittest.TestCase):
     indicator = Indicator({'hh_20': Decimal('20')})
     quote.get_indicator = Mock(return_value=indicator)
     self.assertTrue(quote.is_above_20_day_high())
+ 
+  def test_is_above_50_day_high_false(self):
+    quote = Quote({'close': Decimal('10')})
+    indicator = Indicator({'hh_50': Decimal('20')})
+    quote.get_indicator = Mock(return_value=indicator)
+    self.assertFalse(quote.is_above_50_day_high())
+ 
+  def test_is_above_50_day_high_true(self):
+    quote = Quote({'close': Decimal('30')})
+    indicator = Indicator({'hh_50': Decimal('20')})
+    quote.get_indicator = Mock(return_value=indicator)
+    self.assertTrue(quote.is_above_50_day_high())
     
   def test_is_below_10_day_low_true(self):
     quote = Quote({'close': Decimal('10')})

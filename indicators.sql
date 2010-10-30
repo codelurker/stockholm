@@ -8,5 +8,6 @@ CREATE TABLE indicator (
   atr_exp20 decimal(10, 5) default null,
   ll_10 decimal(10, 5) default null, -- Lowest low in the last 10 days
   hh_20 decimal(10, 5) default null, -- Highest high in the last 20 days
+  hh_50 decimal(10, 5) default null, -- Highest high in the last 50 days
   primary key (symbol, date)
 );

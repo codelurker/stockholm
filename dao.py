@@ -292,6 +292,9 @@ class Quote(Base):
       return None
     return Indicator.get_indicator(self.symbol, self.date)
     
+  def is_above_50_day_high(self):
+    return self.close > self.get_indicator().hh_50
+
   def is_above_20_day_high(self):
     return self.close > self.get_indicator().hh_20
 
@@ -299,7 +302,7 @@ class Quote(Base):
     return self.close < self.get_indicator().ll_10
 
 class Indicator(Base):
-  __cols__ = ['symbol',' date', 'sma_20', 'sma_50', 'atr_exp20', 'atr_14', 'll_10', 'hh_20']
+  __cols__ = ['symbol',' date', 'sma_20', 'sma_50', 'atr_exp20', 'atr_14', 'll_10', 'hh_20', 'hh_50']
   atr_stop = Decimal('2')
 
   def calculate_stop(self, price):
