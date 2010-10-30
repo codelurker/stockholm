@@ -65,7 +65,7 @@ class TestQuote(unittest.TestCase):
     self.assertQuote(quote)
   
   def test_get_quotes(self):
-    Quote.start_date = '2001-01-0' # Beginning of fixtures
+    Quote.__skip_first__ = 0
     quotes = Quote.get_quotes('AAPL')
     found = False
     for quote in quotes:

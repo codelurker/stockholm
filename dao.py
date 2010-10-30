@@ -204,7 +204,7 @@ class Position(Base):
     return Decimal(str(math.floor(admissible_risk/(quote.close - stop))))
 
 class Quote(Base):
-  start_date = "2002-04-01"
+  __skip_first__ = 20
   __cols__ = ["symbol", "date", "open", "high", "low", "close", "tr"]
   
   class NotFound(Exception):
@@ -244,8 +244,8 @@ class Quote(Base):
   
   @staticmethod
   def get_quotes(symbol):
-    c = Query("SELECT symbol, date, open, high, low, close, tr from quote where symbol = %s and date > %s order by date asc", (symbol, Quote.start_date))
-    return c.fillall(Quote)
+    c = Query("SELECT symbol, date, open, high, low, close, tr from quote where symbol = %s order by date asc", (symbol))
+    return c.fillall(Quote)[Quote.__skip_first__:]
   
   @staticmethod
   def get_latest_quotes():
