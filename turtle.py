@@ -12,55 +12,74 @@ from connection import db
   A backtesting implementation of the Turtle's breakout system.
   Observe as we cannot short, we assume we either go long or
   get out of the market.
-  
-  Entry:
-    1) 20 day breakout: Buy 1 unit of stocks when a **close** price exceedes the high of 
-       the previous 20 days and the last breakout would have hit a stop. (*)
-    
-    2) 50 day breakout: If the trade was rejected according to rule 1,
-       buy 1 unit after a 50 day breakout in any case.
-
-  Adding units:
-    Add to the position 1 more unit if the trade is winning 1/2 the atr until
-    the maximum number of allowed units (4) 
-    
-    Example:
-      atr = 10
-      -- price 100 --
-      unit1 price = 100 => stop 80
-
-      -- price 105 --
-      unit1 price = 100 => stop 85
-      unit2 price = 105 => stop 85
-
-  Position sizing (how much is 1 unit of stocks):
-    Buy as many stocks so that your per trade inital risk is 1% of your total 
-    capital.
-  
-    Example:
-      capital = 100.000$, atr = 10, risk = 1.000$, entry price = 100$
-
-      ==> stop = 80$ (100 - 10 * 2)
-        so if the trade hits the stop you will lose 20$ per stock
-        You can buy 1.000$ / 20$ = 50 stocks
-  
-  Stop:
-    Exit a trade if the **price** (not the close) is lower than the entry price - 2 * atr. 
-    If more units are bought, the stop is 2 * atr below the price of the last unit
-  
-  Exit:
-    10 day breakout: When the **price** (not the close) is lower of the lowest of the previous 10 days sell
-    all units.
-
-Notes
-*) There is an extra rule if you are shorting which I'm omitting here
-  
 """
 
-#symbol = 'LUPE.ST'
-#symbol = 'AAPL'
-#symbol = 'RIO.L'
-symbol = 'SYSR.ST'
+symbol = 'GOOG'
+symbol = 'RIO.L'
+symbol = 'AAPL'
+#symbol = 'SYSR.ST'
+
+events = None
+
+def find_events():
+  events = []
+  quote = Quote.get_quotes(symbol)[0]
+  stop = None
+  entry_price = None
+  hh50 = False
+  hh20 = False
+  while quote:
+    quote = quote.next()
+    
+    if not hh20 and quote.is_above_20_day_high():
+      print "Found a hh20 event %s" % quote
+      indicator = quote.get_indicator()
+      events.append(Event(quote, 'hh20'))
+      entry_price = quote.next().open
+      stop = indicator.calculate_stop(entry_price)
+      hh20 = True
+
+    if not hh50 and quote.is_above_50_day_high():
+      print "Found a hh50 event %s" % quote
+      hh50 = True
+      events.append(Event(quote, 'hh50'))
+
+    if not quote: # no more data
+      print "Still winning ", quote
+      events.append(Event(quote, 'exit'))
+      continue
+    
+    if(hh20 and quote.close < stop): # hit the stop
+      print "Found a stop event %s" % quote
+      events.append(Event(quote, 'stop'))
+      #print stop
+      stop = None 
+      entry_price = None
+      hh50 = None 
+      hh20 = None
+      continue
+
+    if(hh20 and quote.close > entry_price and quote.close < quote.get_indicator().ll_10 ): # exit
+      print "Found a exit event %s" % quote
+      events.append(Event(quote, 'exit'))
+      #print quote.get_indicator()
+      #print stop
+      stop = None 
+      entry_price = None
+      hh50 = None 
+      hh20 = None
+      #print
+      continue
+
+  return events
+
+class Event():
+  def __init__(self, quote, type):
+    self.quote = quote
+    self.type = type
+
+  def __str__(self):
+    return "%s:%s" % (self.quote.date, self.type)
 
 def run():
   handlers = TurtleHandlers()
@@ -119,7 +138,8 @@ class TurtleHandlers():
     pass
 
   def handle_units(self, quote):
-    print "handle_units"
+    #print "handle_units"
+    pass
 
   def is_20_breakout(self, quote):
     return quote.is_above_20_day_high()
@@ -128,11 +148,15 @@ class TurtleHandlers():
     return False and quote.is_above_50_day_high()
 
   def is_prev_20_breakout_looser(self, quote):
-    while True:
-      quote = quote.previous()
-      if quote.is_above_20_day_high():
-        break
     print quote
+    for idx, b in enumerate(events):
+      if quote.date == b.quote.date:
+        if idx > 0:
+          if events[idx-1].type != True:
+            print "breakout %s is good" % quote
+    print "breakout %s is bad" % quote
+    return False
+  
 
 def handle_20_breakout(quote):
   pass
@@ -144,4 +168,6 @@ def handle_50_breakout(quote):
   pass
 
 if __name__ == '__main__':
-  run()
+  events = find_events()
+  #print events
+  #run()
