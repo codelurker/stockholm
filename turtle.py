@@ -14,14 +14,17 @@ from connection import db
   get out of the market.
 """
 
-symbol = 'GOOG'
-symbol = 'RIO.L'
-symbol = 'AAPL'
-#symbol = 'SYSR.ST'
 
-events = None
+def get_entry_price_and_stop(quote):
+  """ 
+    Returns a tuple with the entry price and the stop you would need to use
+    if you opened a position on then next day
+  """
+  entry_price = quote.next().open
+  stop = quote.get_indicator().calculate_stop(entry_price)
+  return (entry_price, stop)
 
-def find_events():
+def find_events(symbol):
   events = []
   quote = Quote.get_quotes(symbol)[0]
   stop = None
@@ -29,30 +32,32 @@ def find_events():
   hh50 = False
   hh20 = False
   while quote:
+    prev = quote
     quote = quote.next()
     
-    if not hh20 and quote.is_above_20_day_high():
-      print "Found a hh20 event %s" % quote
-      indicator = quote.get_indicator()
-      events.append(Event(quote, 'hh20'))
-      entry_price = quote.next().open
-      stop = indicator.calculate_stop(entry_price)
-      hh20 = True
-
-    if not hh50 and quote.is_above_50_day_high():
-      print "Found a hh50 event %s" % quote
-      hh50 = True
-      events.append(Event(quote, 'hh50'))
-
     if not quote: # no more data
-      print "Still winning ", quote
-      events.append(Event(quote, 'exit'))
+      if entry_price:
+        print "Still winning ", entry_price, hh50, hh20
+        events.append(Event(prev, 'exit', prev.close))
       continue
     
-    if(hh20 and quote.close < stop): # hit the stop
+    if not hh50 and quote.is_above_50_day_high():
+      print "Found a hh50 event %s" % quote
+      events.append(Event(quote, 'hh50'))
+      hh50 = True
+      if entry_price == None:
+        (entry_price, stop) = get_entry_price_and_stop(quote)
+
+    if not hh20 and quote.is_above_20_day_high():
+      print "Found a hh20 event %s" % quote
+      events.append(Event(quote, 'hh20'))
+      hh20 = True
+      if entry_price == None:
+        (entry_price, stop) = get_entry_price_and_stop(quote)
+
+    if(hh20 and quote.low < stop): # hit the stop
       print "Found a stop event %s" % quote
-      events.append(Event(quote, 'stop'))
-      #print stop
+      events.append(Event(quote, 'stop', stop))
       stop = None 
       entry_price = None
       hh50 = None 
@@ -61,113 +66,132 @@ def find_events():
 
     if(hh20 and quote.close > entry_price and quote.close < quote.get_indicator().ll_10 ): # exit
       print "Found a exit event %s" % quote
-      events.append(Event(quote, 'exit'))
-      #print quote.get_indicator()
-      #print stop
+      events.append(Event(quote, 'exit', quote.get_indicator().ll_10))
       stop = None 
       entry_price = None
       hh50 = None 
       hh20 = None
-      #print
       continue
-
+  print "Found %s events for ticker %s" %(len(events), symbol)
+  print 
   return events
 
 class Event():
-  def __init__(self, quote, type):
+  def __init__(self, quote, type, stop=None):
     self.quote = quote
     self.type = type
+    self.stop = stop
 
   def __str__(self):
-    return "%s:%s" % (self.quote.date, self.type)
+    return "%s:%s:%s" % (self.quote.date, self.type, self.stop)
 
-def run():
-  handlers = TurtleHandlers()
-  for quote in Quote.get_quotes(symbol):
-    #print "\nSimulating %s" % quote
-    #print "%s" % quote.get_indicator()
-    handle_quote(quote, handlers)
- 
-def handle_quote(quote, handlers):
-  if (handlers.has_position(quote)):
-    handlers.handle_stop(quote) or (
-        handlers.handle_exit(quote)) or (
-        handlers.handle_units(quote))
-  else:
-    # Check entries
-    handlers.handle_entry(quote)
-     
-class TurtleHandlers():
-  position = None
-  currency = 'SEK'
-  currency_rate = 1
-  commission = Decimal('99')
-  total = Decimal('1')
+   
+class TurtleSystem():
+  positions = []
   
-  def handle_entry(self, quote):
-    enter = self.is_20_breakout(quote)
-    #if enter: print "breakout %s" % quote
-    enter = enter and (self.is_prev_20_breakout_looser(quote) or
-        self.is_50_breakout(quote))
-    enter and self.open_position(quote)
-    return enter
+  def __init__(self, symbol, currency='SEK', currency_rate=1, enter_commission=Decimal('99')):
+    self.diff = 0
+    self.currency = currency
+    self.currency_rate = currency_rate
+    self.enter_commission = enter_commission
+    self.events = find_events(symbol)
+
+  def run(self, total):
+    self.total = total
+    for idx, event in enumerate(self.events):
+      self.handle_event(event, idx)
+    print "At the end..."
+    print 
+    print "Capital: %10.f %s" % (self.total, self.currency)
+    print "Gain:    %10.f %s" % (self.diff, self.currency)
+    print "-------- %10.2f %%" % (self.diff/self.total*100)
+   
+  def handle_event(self, event, idx):
+    if (self.has_position(event)):
+      self.handle_stop(event) or self.handle_exit(event)
+    else:
+    # Check entries
+      self.handle_entry(event, idx)
+ 
+  def is_prev_event_a_stop(self, idx):
+    if idx > 0:
+      if self.events[idx-1].type == 'stop':
+        return True
+    return False
+ 
+  def handle_entry(self, event, idx):
+    enter = False
+    if (event.type == 'hh50'):
+      print "Found a hh50", event
+      enter = True
+    if (event.type == 'hh20'):
+      print "Found a hh20", event
+      enter = self.is_prev_event_a_stop(idx)
+    if enter:
+      self.open_position(event.quote)
+      print self.positions[-1]
+      self.handle_units(event, idx)
 
   def get_risk(self):
     return Decimal(self.total/100)
 
   def open_position(self, quote):
-
     shares = Position.get_shares(quote, self.get_risk())
     next_quote = quote.next()
-    self.position = Position.open(
+    print "opening on next day", next_quote
+    self.positions.append(Position.open(
         quote.symbol, 
         self.currency, 
         self.currency_rate, 
         next_quote.date,
         next_quote.open,
-        self.commission,
-        shares)
+        self.enter_commission,
+        shares))
 
   def has_position(self, quote):
-    return self.position != None
+    return len(self.positions)>0
 
-  def handle_stop(self, quote):
+  def handle_stop(self, event):
+    if event.type == 'stop':
+      print "Stopping", event
+      print
+      for p in self.positions:
+        self.diff += p.get_net_gain(event.stop)
+      self.positions = []
+
+  def handle_exit(self, event):
+    if event.type == 'exit':
+      print "Exiting", event
+      print 
+      for p in self.positions:
+        self.diff += p.get_net_gain(event.stop)
+      self.positions = []
     pass
 
-  def handle_exit(self, quote):
-    pass
+  def handle_units(self, event, idx):
+    next_event = self.events[idx+1]
+    while True:
+      idx +=1
+      next_event = self.events[idx]
+      if next_event.type == 'exit' or next_event.type == 'stop':
+        break
 
-  def handle_units(self, quote):
-    #print "handle_units"
-    pass
-
-  def is_20_breakout(self, quote):
-    return quote.is_above_20_day_high()
-  
-  def is_50_breakout(self, quote):
-    return False and quote.is_above_50_day_high()
-
-  def is_prev_20_breakout_looser(self, quote):
-    print quote
-    for idx, b in enumerate(events):
-      if quote.date == b.quote.date:
-        if idx > 0:
-          if events[idx-1].type != True:
-            print "breakout %s is good" % quote
-    print "breakout %s is bad" % quote
-    return False
-  
-
-def handle_20_breakout(quote):
-  pass
-
-def handle_prev_20_breakout(quote):
-  pass
-
-def handle_50_breakout(quote):
-  pass
+    quote = event.quote
+    while quote.date < next_event.quote.date:
+      quote = quote.next()
+      indicator = quote.get_indicator()
+      if quote.close > self.positions[-1].enter_price + indicator.atr_exp20/2:
+        if(len(self.positions)<4):
+          self.open_position(quote)
+          print self.positions[-1]
 
 if __name__ == '__main__':
-  events = find_events()
-  #print events
-  #run()
+  print '----------------------------------------------'
+  #symbol = 'GOOG'
+  #symbol = 'AAPL'
+  #symbol = 'MIC-SDB.ST'
+  #symbol = 'ENRO.ST'
+  #symbol = 'BP.L'
+  #symbol = 'RIO.L'
+  #symbol = 'BLT.L'
+  TurtleSystem(symbol='LUPE.ST').run(total=Decimal('300000'))
