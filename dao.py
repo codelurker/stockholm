@@ -161,6 +161,16 @@ class Position(Base):
         'enter_price': enter_price, 'enter_commission': enter_commission,
         'shares': shares, 'portfolio_id': 1})
     return position
+
+  def get_net_gain(self, exit_price=None, exit_commission=None):
+    """
+      Returns the gain that you would get if the position would be sold with
+      the given price, net of the enter and exit commission.
+      If the exit_commission is not given, the enter_commission is used.
+    """
+    exit_price = exit_price or self.exit_price
+    exit_commission = exit_commission or self.enter_commission
+    return (exit_price - self.enter_price) * self.shares - self.enter_commission - exit_commission
   
   def get_risk(self):
     """ 

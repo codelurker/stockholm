@@ -297,6 +297,28 @@ class TestPosition(unittest.TestCase):
     self.assertEquals(None, position.exit_commission)
     self.assertEquals(Decimal('2000'), position.shares)
 
+  def test_get_net_gain(self):
+    position = Position({
+        'enter_price': Decimal('100'),
+        'exit_price': Decimal('110'),
+        'shares': 50,
+        'enter_commission': Decimal('5')})
+    self.assertEquals(Decimal('490'), position.get_net_gain())
+ 
+  def test_get_net_gain_with_price(self):
+    position = Position({
+        'enter_price': Decimal('100'),
+        'shares': 50,
+        'enter_commission': Decimal('5')})
+    self.assertEquals(Decimal('485'), position.get_net_gain(Decimal('110'), Decimal('10')))
+ 
+  def test_get_net_gain_with_exit_commission(self):
+    position = Position({
+        'enter_price': Decimal('100'),
+        'shares': 50,
+        'enter_commission': Decimal('5')})
+    self.assertEquals(Decimal('485'), position.get_net_gain(Decimal('110'), Decimal('10')))
+ 
   @patch("dao.Indicator.get_indicator")
   def test_get_enter_indicator(self, get_indicator):
     position = Position({
