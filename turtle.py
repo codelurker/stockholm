@@ -95,6 +95,7 @@ class TurtleSystem():
     self.currency_rate = currency_rate
     self.enter_commission = enter_commission
     self.events = find_events(symbol)
+    for event in self.events: print "Event(Quote({'date':%s}), '%s')," % (event.quote.date, event.type)
 
   def run(self, total):
     self.total = total
@@ -194,4 +195,4 @@ if __name__ == '__main__':
   #symbol = 'BP.L'
   #symbol = 'RIO.L'
   #symbol = 'BLT.L'
-  TurtleSystem(symbol='LUPE.ST').run(total=Decimal('300000'))
+  TurtleSystem(symbol='ENRO.ST').run(total=Decimal('300000'))
