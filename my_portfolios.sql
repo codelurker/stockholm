@@ -14,7 +14,8 @@ INSERT INTO position VALUES
 ('AAPL',       'USD', 1, '2010-07-06',         null, 259.98,    null, 109, null,       15, 1),
 ('AXIS.ST',    'SEK', 1, '2010-09-22',         null,     92,    null,  99, null,      450, 1),
 ('BOL.ST',     'SEK', 1, '2010-09-14',         null,     97.5,  null,  99, null,      250, 1),
-('REZT.ST',    'SEK', 1, '2010-10-18',         null,  37.30,    null,  99, null,      250, 1)
+('REZT.ST',    'SEK', 1, '2010-10-18',         null,  37.30,    null,  99, null,      250, 1),
+('SKF-A.ST',   'SEK', 1, '2010-10-27',         null, 174.50,    null,  99, null,       44, 1)
 ;
 -- ('ERIC-A.ST',     'SEK', 1, '2010-09-14',         null,     97.5,  null,  99, null,      250, 1),
 -- ('KARO.ST',     'SEK', 1, '2010-09-14',         null,     97.5,  null,  99, null,      250, 1)
