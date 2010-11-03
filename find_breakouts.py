@@ -1,15 +1,24 @@
-import unittest
-from mock import Mock
-from mock import patch
+#!/usr/bin/env python
 
-from dao import * 
 from decimal import Decimal
-from find_breakout import *
 
-def find_recent_breakouts(events, not_older_than):
+def find_recent_breakout(events, not_older_than):
 
-  if(events[-1].type == 'stop'):
+  last_event = events[-1]
+  if(last_event.type != 'eod'):
     return False
 
+  # Good, we are still in a breakout.
+  # When did it start ?
+  breakout_start = events[-2]
+  
+  if breakout_start.quote.date < not_older_than:
+    return False
+
+  if breakout_start.type == 'hh50':
+    return True
+  else:
+    return events[-3].type == 'stop'
+
 if __name__ == '__main__':
-    unittest.main()
+  pass
