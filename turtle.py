@@ -7,6 +7,7 @@ from decimal import Decimal
 from dao import Position
 from dao import Quote
 from connection import db
+from utils import event
 
 """
   A backtesting implementation of the Turtle's breakout system.
@@ -76,16 +77,6 @@ def find_events(symbol):
   print 
   return events
 
-class Event():
-  def __init__(self, quote, type, stop=None):
-    self.quote = quote
-    self.type = type
-    self.stop = stop
-
-  def __str__(self):
-    return "%s:%s:%s" % (self.quote.date, self.type, self.stop)
-
-   
 class TurtleSystem():
   positions = []
   
