@@ -39,7 +39,7 @@ def find_events(symbol):
     if not quote: # no more data
       if entry_price:
         print "Still winning ", entry_price, hh50, hh20
-        events.append(Event(prev, 'exit', prev.close))
+        events.append(Event(prev, 'eod', prev.close))
       continue
     
     if not hh50 and quote.is_above_50_day_high():
@@ -152,7 +152,7 @@ class TurtleSystem():
       self.positions = []
 
   def handle_exit(self, event):
-    if event.type == 'exit':
+    if event.type == 'exit' or event.type == 'eod':
       print "Exiting", event
       print 
       for p in self.positions:
