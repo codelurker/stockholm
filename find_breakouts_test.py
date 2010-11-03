@@ -22,7 +22,7 @@ class TestFindBreakouts(unittest.TestCase):
           Event(Quote({'date':'2010-09-20'}), 'hh50'),
           Event(Quote({'date':'2010-11-01'}), 'eod'),
         ]
-      self.assertTrue(find_recent_breakout(events, '2010-09-15'))
+      self.assertEquals(events[1], find_recent_breakout(events, '2010-09-15'))
  
     def test_find_breakout_hh50_too_old(self):
       events = [
@@ -64,7 +64,7 @@ class TestFindBreakouts(unittest.TestCase):
           Event(Quote({'date':'2010-09-20'}), 'hh20'),
           Event(Quote({'date':'2010-11-01'}), 'eod'),
       ]
-      self.assertTrue(find_recent_breakout(events, '2010-09-15'))
+      self.assertEquals(events[1], find_recent_breakout(events, '2010-09-15'))
 
     def test_find_breakout_hh20_preceeded_by_exit(self):
       events = [

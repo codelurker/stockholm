@@ -15,10 +15,9 @@ def find_recent_breakout(events, not_older_than):
   if breakout_start.quote.date < not_older_than:
     return False
 
-  if breakout_start.type == 'hh50':
-    return True
-  else:
-    return events[-3].type == 'stop'
+  if breakout_start.type == 'hh50' or events[-3].type == 'stop':
+    return breakout_start
+
 
 if __name__ == '__main__':
   pass
