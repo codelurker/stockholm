@@ -4,18 +4,18 @@ import unittest
 from mock import Mock
 from mock import patch
 
+from dao import Quote
 from decimal import Decimal
 from utils import Event
 from find_breakouts import *
 
-# Remove this class and import the real one.
-class Quote:
-  def __init__(self, dict_):
-    self.__dict__ = dict_
-
-
 class TestFindBreakouts(unittest.TestCase):
 
+    def test_find_breakout_no_events(self):
+      events = [
+        ]
+      self.assertFalse(find_recent_breakout(events, '2010-09-15'))
+ 
     def test_find_breakout_hh50(self):
       events = [
           Event(Quote({'date':'2010-09-01'}), 'hh20'),
@@ -23,6 +23,13 @@ class TestFindBreakouts(unittest.TestCase):
           Event(Quote({'date':'2010-11-01'}), 'eod'),
         ]
       self.assertEquals(events[1], find_recent_breakout(events, '2010-09-15'))
+
+    def test_find_breakout_hh20_with_no_past(self):
+      events = [
+          Event(Quote({'date':'2010-09-20'}), 'hh20'),
+          Event(Quote({'date':'2010-11-01'}), 'eod'),
+        ]
+      self.assertFalse(find_recent_breakout(events, '2010-09-15'))
  
     def test_find_breakout_hh50_too_old(self):
       events = [

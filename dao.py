@@ -212,6 +212,9 @@ class Position(Base):
     stop = indicator.calculate_stop(quote.close)
     return Decimal(str(math.floor(admissible_risk/(quote.close - stop))))
 
+  def get_next_unit_enter_price(self):
+    return self.enter_price + self.current_quote.get_indicator().atr_exp20/2
+
 class Quote(Base):
   __skip_first__ = 20
   __cols__ = ["symbol", "date", "open", "high", "low", "close", "tr"]
@@ -257,7 +260,7 @@ class Quote(Base):
     return c.fillall(Quote)[Quote.__skip_first__:]
   
   @staticmethod
-  def get_latest_quotes():
+  def get_latest_quotes(match='%%'):
     """ 
         Returns the latest quote for each
         symbol stored in the database.
@@ -266,7 +269,7 @@ class Quote(Base):
       " quote.symbol as symbol, quote.date as date, open, high, low, close, tr"
       " FROM quote, (SELECT symbol, max(date) as date from quote " 
       " group by symbol order by date asc) as maxs where "
-      " quote.symbol = maxs.symbol and quote.date = maxs.date", ())
+      " quote.symbol = maxs.symbol and quote.date = maxs.date and quote.symbol like %s", (match))
     return c.fillall(Quote)
 
   @staticmethod

@@ -7,7 +7,7 @@ from decimal import Decimal
 from dao import Position
 from dao import Quote
 from connection import db
-from utils import event
+from utils import Event
 
 """
   A backtesting implementation of the Turtle's breakout system.
@@ -21,13 +21,20 @@ def get_entry_price_and_stop(quote):
     Returns a tuple with the entry price and the stop you would need to use
     if you opened a position on then next day
   """
-  entry_price = quote.next().open
-  stop = quote.get_indicator().calculate_stop(entry_price)
+  next = quote.next()
+  if next == None:
+    next = quote
+    print 'Warning, could not find next quote for %s', quote
+  entry_price = next.open
+  stop = next.get_indicator().calculate_stop(entry_price)
   return (entry_price, stop)
 
 def find_events(symbol):
   events = []
-  quote = Quote.get_quotes(symbol)[0]
+  quotes = Quote.get_quotes(symbol)
+  if len(quotes) < 1:
+    return events
+  quote = quotes[0]
   stop = None
   entry_price = None
   hh50 = False
@@ -38,26 +45,26 @@ def find_events(symbol):
     
     if not quote: # no more data
       if entry_price:
-        print "Still winning ", entry_price, hh50, hh20
+        #print "Still winning ", entry_price, hh50, hh20
         events.append(Event(prev, 'eod', prev.close))
       continue
     
     if not hh50 and quote.is_above_50_day_high():
-      print "Found a hh50 event %s" % quote
+      #print "Found a hh50 event %s" % quote
       events.append(Event(quote, 'hh50'))
       hh50 = True
       if entry_price == None:
         (entry_price, stop) = get_entry_price_and_stop(quote)
 
     if not hh20 and quote.is_above_20_day_high():
-      print "Found a hh20 event %s" % quote
+      #print "Found a hh20 event %s" % quote
       events.append(Event(quote, 'hh20'))
       hh20 = True
       if entry_price == None:
         (entry_price, stop) = get_entry_price_and_stop(quote)
 
     if(hh20 and quote.low < stop): # hit the stop
-      print "Found a stop event %s" % quote
+      #print "Found a stop event %s" % quote
       events.append(Event(quote, 'stop', stop))
       stop = None 
       entry_price = None
@@ -66,15 +73,15 @@ def find_events(symbol):
       continue
 
     if(hh20 and quote.close > entry_price and quote.close < quote.get_indicator().ll_10 ): # exit
-      print "Found a exit event %s" % quote
+      #print "Found a exit event %s" % quote
       events.append(Event(quote, 'exit', quote.get_indicator().ll_10))
       stop = None 
       entry_price = None
       hh50 = None 
       hh20 = None
       continue
-  print "Found %s events for ticker %s" %(len(events), symbol)
-  print 
+  #print "Found %s events for ticker %s" %(len(events), symbol)
+  #print 
   return events
 
 class TurtleSystem():

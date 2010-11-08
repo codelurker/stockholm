@@ -33,3 +33,6 @@ find(Decimal('48000'), '\.ST')
 
 print "\nStocks"
 find(Decimal('390000') / dao.Currency.get_rate('GBPSEK'), '\.L')
+
+print "\nStocks"
+find(Decimal('390000') / dao.Currency.get_rate('SEKSEK'), '\.ST')
